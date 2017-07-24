@@ -37,7 +37,7 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 		$date = date("m-d-Y");
 		$filename = ltrim(filename($contest)."_Entries".filename($filter).filename($action).filename($view).filename($date).$loc.$extension,"_");
 		
-		include(DB.'output_entries_export.db.php');
+		include (DB.'output_entries_export.db.php');
 		
 		function mysqli_field_name($result, $field_offset)	{
 			$properties = mysqli_fetch_field_direct($result, $field_offset);
@@ -72,7 +72,7 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 				fputcsv($fp, $headers);
 				
 				do {
-					include(DB.'output_entries_export_extend.db.php');
+					include (DB.'output_entries_export_extend.db.php');
 					$fields1 = array_values($row_sql);
 					$fields2 = array($table_name,$row_flight['flightNumber'],$row_flight['flightRound'],sprintf("%02s",$row_scores['scoreEntry']),$row_scores['scorePlace'],$bos_place,$style_type,$location[2]);
 					$fields = array_merge($fields1,$fields2);
@@ -86,9 +86,9 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 		
 		else {
 			//first name, last name, email, category, subcategory, entry #, judging #, brewinfo, brewmead1, brewmead2, brewmead3, address, city, state, zip
-			if (($go == "csv") && ($action == "hccp") && ($filter != "winners")) $a[] = array('First Name','Last Name','Email','Category','Sub Category','Style','Entry Number','Judging Number','Brew Name','Required Info','Sweetness','Carb','Strength');
-			if (($go == "csv") && (($action == "default") || ($action == "email")) && ($filter != "winners")) $a[] = array('First Name','Last Name','Email','Category','Sub Category','Style','Entry Number','Judging Number','Brew Name','Required Info','Specifics','Sweetness','Carb','Strength','Address','City','State/Province','Zip/Postal Code','Country','Table','Flight','Round','Score','Place','BOS Place','Style Type','Location');
-			if (($go == "csv") && ($action == "default") && ($filter == "winners")) $a[] = array('Table Number','Table Name','Category','Sub-Category','Style','Place','Last Name','First Name','Email','Address','City','State/Province','Zip/Postal Code','Country','Phone','Entry Name','Club','Co Brewer');
+			if (($go == "csv") && ($action == "hccp") && ($filter != "winners")) $a[] = array('First Name','Last Name','Email','Category','Style','Style Name','Entry Number','Judging Number','Brew Name','Required Info','Sweetness','Carb','Strength');
+			if (($go == "csv") && (($action == "default") || ($action == "email")) && ($filter != "winners")) $a[] = array('First Name','Last Name','Email','Category','Style','Style Name','Entry Number','Judging Number','Brew Name','Required Info','Specifics','Sweetness','Carb','Strength','Address','City','State/Province','Zip/Postal Code','Country','Table','Flight','Round','Score','Place','BOS Place','Style Type','Location');
+			if (($go == "csv") && ($action == "default") && ($filter == "winners")) $a[] = array('Table Number','Table Name','Category','Style','Style Name','Place','Last Name','First Name','Email','Address','City','State/Province','Zip/Postal Code','Country','Phone','Entry Name','Club','Co Brewer');
 			
 			do {
 				
@@ -113,7 +113,7 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 				
 				// Winner Downloads
 				if (($action == "default") && ($filter == "winners") && ($_SESSION['prefsWinnerMethod'] == 0)) {
-					include(DB.'output_entries_export_winner.db.php');
+					include (DB.'output_entries_export_winner.db.php');
 				} // end if (($action == "default") && ($filter == "winners"))
 				
 				// No participant email addresses
@@ -122,14 +122,14 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 				
 				// With email addresses of participants.
 				if ((($action == "default") || ($action == "email")) && ($go == "csv") && ($filter != "winners")) {
-					include(DB.'output_entries_export_extend.db.php');
+					include (DB.'output_entries_export_extend.db.php');
 					$a[] = array($brewerFirstName,$brewerLastName,$brewer_info[6],$row_sql['brewCategory'],$row_sql['brewSubCategory'],$row_sql['brewStyle'],$entryNo,$judgingNo,$brewName,$brewInfo,$brewSpecifics,$row_sql['brewMead1'],$row_sql['brewMead2'],$row_sql['brewMead3'],$brewer_info[10],$brewer_info[11],$brewer_info[12],$brewer_info[13],$brewer_info[14],$table_name,$row_flight['flightNumber'],$row_flight['flightRound'],sprintf("%02s",$row_scores['scoreEntry']),$row_scores['scorePlace'],$bos_place,$style_type,$location[2]);
 				}
 				
 			} while ($row_sql = mysqli_fetch_assoc($sql));
 			
 			if (($action == "default") && ($filter == "winners") && ($_SESSION['prefsWinnerMethod'] > 0)) {
-				include(DB.'output_entries_export_winner.db.php');
+				include (DB.'output_entries_export_winner.db.php');
 			}
 			
 			header('Content-type: application/x-msdownload');
@@ -151,7 +151,7 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 
 	if ($section == "emails") {
 		
-		include(DB.'output_email_export.db.php');
+		include (DB.'output_email_export.db.php');
 	
 		//echo $query_sql;
 		
@@ -222,7 +222,7 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 
 	if ($section == "participants") {
 		
-		include(DB.'output_participants_export.db.php');
+		include (DB.'output_participants_export.db.php');
 	
 		if ($go == "csv") { $separator = ","; $extension = ".csv"; }
 		if ($go == "tab") { $separator = "\t"; $extension = ".tab"; }
@@ -262,12 +262,12 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 
 	if ($section == "promo") {
 		
-		include(DB.'dropoff.db.php');
-		include(DB.'sponsors.db.php');
-		include(DB.'contacts.db.php');
-		include(DB.'styles.db.php'); 
-		include(DB.'judging_locations.db.php'); 
-		include(DB.'entry_info.db.php');
+		include (DB.'dropoff.db.php');
+		include (DB.'sponsors.db.php');
+		include (DB.'contacts.db.php');
+		include (DB.'styles.db.php'); 
+		include (DB.'judging_locations.db.php'); 
+		include (DB.'entry_info.db.php');
 
 		if ($_SESSION['contestHostWebsite'] != "") $website = $_SESSION['contestHostWebsite']; 
 		else $website = $_SERVER['SERVER_NAME'];
@@ -418,6 +418,8 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 		require(DB.'winners.db.php');
 		require(DB.'output_results.db.php');
 		
+		if ($_SESSION['prefsProEdition'] == 1) $label_brewer = $label_organization; else $label_brewer = $label_brewer;
+		
 		if ($view == "pdf") {
 			require(CLASSES.'fpdf/html_table.php');
 			$pdf=new PDF();
@@ -460,34 +462,36 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 					
 					if ($entry_count > 0) { 
 					
-					if ($view == "pdf") $html .= '<br><br><strong>Table '.$row_tables['tableNumber'].': '.$row_tables['tableName'].' ('.$entry_count.' '.$entries.')</strong><br>';
-					else $html .= '<h2>Table '.$row_tables['tableNumber'].': '.$row_tables['tableName'].' ('.$entry_count.' '.$entries.')</h2>';
+					if ($view == "pdf") $html .= '<br><br><strong>'.$label_table.' '.$row_tables['tableNumber'].': '.$row_tables['tableName'].' ('.$entry_count.' '.$entries.')</strong><br>';
+					else $html .= '<h2>'.$label_table.' '.$row_tables['tableNumber'].': '.$row_tables['tableName'].' ('.$entry_count.' '.$entries.')</h2>';
 					$html .= '<table border="1" cellpadding="5" cellspacing="0">';
 					$html .= '<tr>';
-					$html .= '<td width="35" align="center"  bgcolor="#cccccc" nowrap="nowrap"><strong>Pl.</strong></td>';
-					$html .= '<td width="150" align="center" bgcolor="#cccccc"><strong>Brewer(s)</strong></td>';
-					$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>Entry Name</strong></td>';
-					$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>Style</strong></td>';
-					$html .= '<td width="175" align="center" bgcolor="#cccccc"><strong>Club</strong></td>';
+					$html .= '<td width="35" align="center"  bgcolor="#cccccc" nowrap="nowrap"><strong>'.$label_place.'</strong></td>';
+					$html .= '<td width="150" align="center" bgcolor="#cccccc"><strong>'.$label_brewer.'</strong></td>';
+					$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>'.$label_entry.' '.$label_name.'</strong></td>';
+					$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>'.$label_style.'</strong></td>';
+					if ($_SESSION['prefsProEdition'] == 0) $html .= '<td width="175" align="center" bgcolor="#cccccc"><strong>'.$label_club.'</strong></td>';
 					$html .= '</tr>';
 				
-					include(DB.'scores.db.php');
+					include (DB.'scores.db.php');
 					
 					do { 
 							$style = $row_scores['brewCategory'].$row_scores['brewSubCategory'];
 							$html .= '<tr>';
 							$html .= '<td width="35">'.display_place($row_scores['scorePlace'],1).'</td>';
-							$html .= '<td width="150">'.$row_scores['brewerFirstName'].' '.$row_scores['brewerLastName'].'</td>';
+							if ($_SESSION['prefsProEdition'] == 1) $html .= '<td width="150">'.$row_scores['brewerBreweryName'].'</td>';
+							else $html .= '<td width="150">'.$row_scores['brewerFirstName'].' '.$row_scores['brewerLastName'].'</td>';
 							$html .= '<td width="200">';
 							if ($row_scores['brewName'] != '') $html .= strtr($row_scores['brewName'],$html_remove); else $html .= '&nbsp;';
 							$html .= '</td>';
 							$html .= '<td width="200">';
 							if ($row_scores['brewStyle'] != '') $html .= $row_scores['brewStyle']; else $html .= "&nbsp;";
 							$html .= '</td>';
-							$html .= '<td width="175">';
-							if ($row_scores['brewerClubs'] != "") $html .=strtr($row_scores['brewerClubs'],$html_remove);
-							else $html .= "&nbsp;";
-							$html .= '</td>';
+							if (($_SESSION['prefsProEdition'] == 0) && ($row_scores['brewerClubs'] != "")) {
+								$html .= '<td width="175">';
+								$html .= strtr($row_scores['brewerClubs'],$html_remove);
+								$html .= '</td>';
+							}
 							$html .= '</tr>';
 						} while ($row_scores = mysqli_fetch_assoc($scores));
 					$html .= '</table>';
@@ -504,7 +508,7 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 					
 					if ($style > 0) {
 				
-						include(DB.'winners_category.db.php');
+						include (DB.'winners_category.db.php');
 			
 						//echo $style."<br>";
 						//echo $row_entry_count['count']."<br>";
@@ -517,42 +521,44 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 							$style_trimmed = ltrim($style,"0");
 							
 							if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) {
-								if ($view == "pdf") $html .= '<br><br><strong>Category '.ltrim($style,"0").': '.style_convert($style,"1").' ('.$row_entry_count['count'].' '.$entries.')</strong><br>';
-								else $html .= '<h2>Category '.$style_trimmed.': '.style_convert($style,"1").' ('.$row_entry_count['count'].' '.$entries.')</h2>';
+								if ($view == "pdf") $html .= '<br><br><strong>Style '.ltrim($style,"0").': '.style_convert($style,"1").' ('.$row_entry_count['count'].' '.$entries.')</strong><br>';
+								else $html .= '<h2>Style '.$style_trimmed.': '.style_convert($style,"1").' ('.$row_entry_count['count'].' '.$entries.')</h2>';
 							}
 							
 							else {
-								include(INCLUDES.'ba_constants.inc.php');
+								include (INCLUDES.'ba_constants.inc.php');
 								if ($view == "pdf") $html .= '<br><br><strong>'.$ba_category_names[$style].' ('.$row_entry_count['count'].' '.$entries.')</strong><br>';
 								else $html .= '<h2>'.$ba_category_names[$style].' ('.$row_entry_count['count'].' '.$entries.')</h2>';
 							}
 							
 							$html .= '<table border="1" cellpadding="5" cellspacing="0">';
 							$html .= '<tr>';
-							$html .= '<td width="35" align="center"  bgcolor="#cccccc" nowrap="nowrap"><strong>Pl.</strong></td>';
-							$html .= '<td width="150" align="center" bgcolor="#cccccc"><strong>Brewer(s)</strong></td>';
-							$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>Entry Name</strong></td>';
-							$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>Style</strong></td>';
-							$html .= '<td width="175" align="center" bgcolor="#cccccc"><strong>Club</strong></td>';
+							$html .= '<td width="35" align="center"  bgcolor="#cccccc" nowrap="nowrap"><strong>'.$label_place.'</strong></td>';
+							$html .= '<td width="150" align="center" bgcolor="#cccccc"><strong>'.$label_brewer.'</strong></td>';
+							$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>'.$label_entry.' '.$label_name.'</strong></td>';
+							$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>'.$label_style.'</strong></td>';
+							if ($_SESSION['prefsProEdition'] == 0) $html .= '<td width="175" align="center" bgcolor="#cccccc"><strong>'.$label_club.'</strong></td>';
 							$html .= '</tr>';
 					 
-						include(DB.'scores.db.php');
+						include (DB.'scores.db.php');
 								
 							do { 
 								$style = $row_scores['brewCategory'].$row_scores['brewSubCategory'];
 								$html .= '<tr>';
 								$html .= '<td width="35">'.display_place($row_scores['scorePlace'],1).'</td>';
-								$html .= '<td width="150">'.$row_scores['brewerFirstName'].' '.$row_scores['brewerLastName'].'</td>';
+								if ($_SESSION['prefsProEdition'] == 1) $html .= '<td width="150">'.$row_scores['brewerBreweryName'].'</td>';
+								else $html .= '<td width="150">'.$row_scores['brewerFirstName'].' '.$row_scores['brewerLastName'].'</td>';
 								$html .= '<td width="200">';
 								if ($row_scores['brewName'] != '') $html .= strtr($row_scores['brewName'],$html_remove); else $html .= '&nbsp;';
 								$html .= '</td>';
 								$html .= '<td width="200">';
 								if ($row_scores['brewStyle'] != '') $html .= $row_scores['brewStyle']; else $html .= "&nbsp;";
 								$html .= '</td>';
-								$html .= '<td width="175">';
-								if ($row_scores['brewerClubs'] != "") $html .=strtr($row_scores['brewerClubs'],$html_remove);
-								else $html .= "&nbsp;";
-								$html .= '</td>';
+								if (($_SESSION['prefsProEdition'] == 0) && ($row_scores['brewerClubs'] != "")) {
+									$html .= '<td width="175">';
+									$html .= strtr($row_scores['brewerClubs'],$html_remove);
+									$html .= '</td>';
+								}
 								$html .= '</tr>';
 							} while ($row_scores = mysqli_fetch_assoc($scores));
 						
@@ -572,7 +578,7 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 				foreach (array_unique($styles) as $style) {
 					
 					$style = explode("^",$style);
-					include(DB.'winners_subcategory.db.php');
+					include (DB.'winners_subcategory.db.php');
 					
 					if (($row_entry_count['count'] > 0) && ($row_score_count['count'] > 0)) {
 						
@@ -581,8 +587,8 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 						
 						
 						if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) {
-							if ($view == "pdf") $html .= '<br><br><strong>Category '.ltrim($style[0],"0").$style[1].': '.$style[2].' ('.$row_entry_count['count'].' '.$entries.')</strong><br>';
-							else $html .= '<h2>Category '.ltrim($style[0],"0").$style[1].': '.$style[2].' ('.$row_entry_count['count'].' '.$entries.')</h2>';
+							if ($view == "pdf") $html .= '<br><br><strong>Style '.ltrim($style[0],"0").$style[1].': '.$style[2].' ('.$row_entry_count['count'].' '.$entries.')</strong><br>';
+							else $html .= '<h2>Style '.ltrim($style[0],"0").$style[1].': '.$style[2].' ('.$row_entry_count['count'].' '.$entries.')</h2>';
 						}
 						
 						else {
@@ -594,30 +600,32 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 						
 						$html .= '<table border="1" cellpadding="5" cellspacing="0">';
 						$html .= '<tr>';
-						$html .= '<td width="35" align="center"  bgcolor="#cccccc" nowrap="nowrap"><strong>Pl.</strong></td>';
-						$html .= '<td width="150" align="center" bgcolor="#cccccc"><strong>Brewer(s)</strong></td>';
-						$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>Entry Name</strong></td>';
-						$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>Style</strong></td>';
-						$html .= '<td width="175" align="center" bgcolor="#cccccc"><strong>Club</strong></td>';
+						$html .= '<td width="35" align="center"  bgcolor="#cccccc" nowrap="nowrap"><strong>'.$label_place.'</strong></td>';
+						$html .= '<td width="150" align="center" bgcolor="#cccccc"><strong>'.$label_brewer.'</strong></td>';
+						$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>'.$label_entry.' '.$label_name.'</strong></td>';
+						$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>'.$label_style.'</strong></td>';
+						if ($_SESSION['prefsProEdition'] == 0) $html .= '<td width="175" align="center" bgcolor="#cccccc"><strong>'.$label_club.'</strong></td>';
 						$html .= '</tr>';
 					 
-						include(DB.'scores.db.php');
+						include (DB.'scores.db.php');
 						
 						do { 
 							$style = $row_scores['brewCategory'].$row_scores['brewSubCategory'];
 							$html .= '<tr>';
 							$html .= '<td width="35">'.display_place($row_scores['scorePlace'],1).'</td>';
-							$html .= '<td width="150">'.$row_scores['brewerFirstName'].' '.$row_scores['brewerLastName'].'</td>';
+							if ($_SESSION['prefsProEdition'] == 1) $html .= '<td width="150">'.$row_scores['brewerBreweryName'].'</td>';
+							else $html .= '<td width="150">'.$row_scores['brewerFirstName'].' '.$row_scores['brewerLastName'].'</td>';
 							$html .= '<td width="200">';
 							if ($row_scores['brewName'] != '') $html .= strtr($row_scores['brewName'],$html_remove); else $html .= '&nbsp;';
 							$html .= '</td>';
 							$html .= '<td width="200">';
 							if ($row_scores['brewStyle'] != '') $html .= $row_scores['brewStyle']; else $html .= "&nbsp;";
 							$html .= '</td>';
-							$html .= '<td width="175">';
-							if ($row_scores['brewerClubs'] != "") $html .=strtr($row_scores['brewerClubs'],$html_remove);
-							else $html .= "&nbsp;";
-							$html .= '</td>';
+							if (($_SESSION['prefsProEdition'] == 0) && ($row_scores['brewerClubs'] != "")) {
+								$html .= '<td width="175">';
+								$html .= strtr($row_scores['brewerClubs'],$html_remove);
+								$html .= '</td>';
+							}
 							$html .= '</tr>';
 						} while ($row_scores = mysqli_fetch_assoc($scores));
 						
@@ -632,6 +640,9 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 		}
 		
 		if ($go == "judging_scores_bos") {
+			
+			if ($_SESSION['prefsProEdition'] == 1) $label_brewer = $label_organization; else $label_brewer = $label_brewer;
+			
 			$html = '';
 			
 			if ($view == "pdf") {
@@ -649,7 +660,7 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 			
 			foreach (array_unique($a) as $type) {
 				
-				include(DB.'output_results_download_bos.db.php');
+				include (DB.'output_results_download_bos.db.php');
 				
 				if ($totalRows_bos > 0) {
 					
@@ -657,11 +668,11 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 					else $html .= '<h2>'.$row_style_type['styleTypeName'].'</h2>';
 					$html .= '<table border="1" cellpadding="5" cellspacing="0">';
 					$html .= '<tr>';
-					$html .= '<td width="35"  align="center" bgcolor="#cccccc" nowrap="nowrap"><strong>Place</strong></td>';
-					$html .= '<td width="150" align="center" bgcolor="#cccccc"><strong>Brewer(s)</strong></td>';
-					$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>Entry Name</strong></td>';
-					$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>Style</strong></td>';
-					$html .= '<td width="175" align="center" bgcolor="#cccccc"><strong>Club</strong></td>';
+					$html .= '<td width="35" align="center"  bgcolor="#cccccc" nowrap="nowrap"><strong>'.$label_place.'</strong></td>';
+					$html .= '<td width="150" align="center" bgcolor="#cccccc"><strong>'.$label_brewer.'</strong></td>';
+					$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>'.$label_entry.' '.$label_name.'</strong></td>';
+					$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>'.$label_style.'</strong></td>';
+					if ($_SESSION['prefsProEdition'] == 0) $html .= '<td width="175" align="center" bgcolor="#cccccc"><strong>'.$label_club.'</strong></td>';
 					$html .= '</tr>';
 					
 					do {
@@ -670,15 +681,20 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 					
 						$html .= '<tr>';
 						$html .= '<td width="35" nowrap="nowrap">'.display_place($row_bos['scorePlace'],1).'</td>';
-						$html .= '<td width="150">'.$row_bos['brewerFirstName'].' '.$row_bos['brewerLastName'];
-						if ($row_bos['brewCoBrewer'] != "") $html .=', '.$row_bos['brewCoBrewer'];
+						if ($_SESSION['prefsProEdition'] == 1) $html .= '<td width="150">'.$row_bos['brewerBreweryName'].'</td>';
+						else $html .= '<td width="150">'.$row_bos['brewerFirstName'].' '.$row_bos['brewerLastName'].'</td>';
+						if (($_SESSION['prefsProEdition'] == 0) && ($row_bos['brewCoBrewer'] != "")) $html .=', '.$row_bos['brewCoBrewer'];
 						$html .= '</td>';
 						$html .= '<td width="200">'.strtr($row_bos['brewName'],$html_remove).'</td>';
 						$html .= '<td width="200">'.$row_bos['brewStyle'].'</td>';
-						$html .= '<td width="175">';
-						if ($row_bos['brewerClubs'] != "") $html .=strtr($row_bos['brewerClubs'],$html_remove);
-						else $html .= "&nbsp;";
-						$html .= '</td>';
+						
+						if ($_SESSION['prefsProEdition'] == 0) {
+							$html .= '<td width="175">';
+							if ($row_bos['brewerClubs'] != "") $html .= strtr($row_bos['brewerClubs'],$html_remove);
+							else $html .= "&nbsp;";
+							$html .= '</td>';
+						} 
+						
 						$html .= '</tr>';
 						
 						
@@ -694,7 +710,7 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 				
 				do {
 					
-					include(DB.'output_results_download_sbd.db.php');
+					include (DB.'output_results_download_sbd.db.php');
 					
 					if ($totalRows_sbd > 0) {
 					if ($view == "pdf") $html .= '<br><br><strong>'.strtr($row_sbi['sbi_name'],$html_remove).'</strong>';
@@ -702,11 +718,11 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 					$html .= '<br>'.strtr($row_sbi['sbi_description'],$html_remove).'<br>';
 					$html .= '<table border="1" cellpadding="5" cellspacing="0">';
 					$html .= '<tr>';
-					if ($row_sbi['sbi_display_places'] == "1") $html .= '<td width="35" align="center"  bgcolor="#cccccc" nowrap="nowrap"><strong>Place</strong></td>';
-					$html .= '<td width="150" align="center" bgcolor="#cccccc"><strong>Brewer(s)</strong></td>';
-					$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>Entry Name</strong></td>';
-					$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>Style</strong></td>';
-					$html .= '<td width="175" align="center" bgcolor="#cccccc"><strong>Club</strong></td>';
+					if ($row_sbi['sbi_display_places'] == "1") $html .= '<td width="35" align="center"  bgcolor="#cccccc" nowrap="nowrap"><strong>'.$label_place.'</strong></td>';
+					$html .= '<td width="150" align="center" bgcolor="#cccccc"><strong>'.$label_brewer.'</strong></td>';
+					$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>'.$label_entry.' '.$label_name.'</strong></td>';
+					$html .= '<td width="200" align="center" bgcolor="#cccccc"><strong>'.$label_style.'</strong></td>';
+					if ($_SESSION['prefsProEdition'] == 0) $html .= '<td width="175" align="center" bgcolor="#cccccc"><strong>'.$label_club.'</strong></td>';
 					$html .= '</tr>';
 					
 					do { 
@@ -721,7 +737,7 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 						$html .= '<td width="200">'.strtr($entry_info['0'],$html_remove).'</td>';
 						$html .= '<td width="200">'.$entry_info['3'].'</td>';
 						$html .= '<td width="175">';
-						if ($brewer_info['7'] != "") $html .=strtr($brewer_info['8'],$html_remove);
+						if (($_SESSION['prefsProEdition'] == 0) && ($brewer_info['8'] != "")) $html .=strtr($brewer_info['8'],$html_remove);
 						else $html .= "&nbsp;";
 						$html .= '</td>';   
 						$html .= '</tr>';
@@ -768,10 +784,10 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 
 	if ($section == "staff") {
 		
-		include(DB.'judging_locations.db.php');
-		include(DB.'styles.db.php');
-		include(DB.'admin_common.db.php');
-		include(DB.'output_staff_points.db.php');
+		include (DB.'judging_locations.db.php');
+		include (DB.'styles.db.php');
+		include (DB.'admin_common.db.php');
+		include (DB.'output_staff_points.db.php');
 		
 		// Get total amount of paid and received entries
 		$total_entries = total_paid_received("judging_scores","default");
@@ -1159,7 +1175,7 @@ if (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ((
 				
 				foreach ($a as $type) {
 					
-					include(DB.'output_results_download_bos.db.php');
+					include (DB.'output_results_download_bos.db.php');
 					
 					if ($totalRows_bos > 0) {
 						$output .= "BOS Winner: ".."\n";

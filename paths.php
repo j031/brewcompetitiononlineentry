@@ -33,13 +33,14 @@ define('DEBUGGING',ROOT.'includes'.DIRECTORY_SEPARATOR.'debug'.DIRECTORY_SEPARAT
 // --------------------------------------------------------
 // Global Definitions
 // --------------------------------------------------------
-define('HOSTED', FALSE);
-define('MAINT', FALSE);
-define('NHC', FALSE);
-define('TESTING', FALSE);
-define('SINGLE', FALSE);
-define('DEBUG', TRUE);
-define('DEBUG_SESSION_VARS', TRUE);
+define('HOSTED', FALSE); // default FALSE
+define('MAINT', FALSE); // default FALSE
+define('NHC', FALSE); // default FALSE
+define('TESTING', FALSE); // default FALSE
+define('SINGLE', FALSE); // default FALSE
+define('DEBUG', FALSE); // default FALSE
+define('DEBUG_SESSION_VARS', FALSE); // default FALSE
+define('CDN', TRUE); // default TRUE
 
 // --------------------------------------------------------
 // Error Reporting
@@ -53,27 +54,24 @@ else ini_set('display_errors','Off');
 // --------------------------------------------------------
 // Load Configuration
 // --------------------------------------------------------
-require (CONFIG.'config.php');
-require (INCLUDES.'current_version.inc.php'); 
+require_once (CONFIG.'config.php');
+require_once (INCLUDES.'current_version.inc.php');
 
-/*
+if (HOSTED) {
+	$installation_id = $prefix;
+	$session_expire_after = 30;
+}
 
------ NEED to FIND ANOTHER SOLUTION -----
-Add to config.php when found.
------------------------------------------
-Give your installation a unique ID. If you plan on running multiple instances
-of BCOE&M from the same domain, you'll need to give each installation a 
-unique identifier. This prevents "cross-pollination" of session data display.
-
-For single installations, the default below will be sufficient. Otherwise,
-change the variable to something completely unique for each installation.
-*/
-
-
-$installation_id = "";
-if (empty($installation_id)) $prefix_session = md5("BCOEM012345"); 
-else $prefix_session = md5($installation_id);
-
+/** Using an MD5 of __FILE__ will ensure a different session name for multiple
+ * installs on the same domain name.
+ * 
+ * @fixes https://github.com/geoffhumphrey/brewcompetitiononlineentry/issues/781
+ */
+if (empty($installation_id)) {
+	$prefix_session = md5(__FILE__);
+} else {
+	$prefix_session = md5($installation_id);
+}
 
 function is_session_started() {
     if (php_sapi_name() !== 'cli' ) {
@@ -91,17 +89,13 @@ if (is_session_started() === FALSE) {
     session_start();
 }
 
-$expireAfter = 30;
-
 if (isset($_SESSION['last_action'])) {
-    
-    $secondsInactive = time() - $_SESSION['last_action'];
-    $expireAfterSeconds = $expireAfter * 60;
-    if ($secondsInactive >= $expireAfterSeconds) {
+    $seconds_inactive = time() - $_SESSION['last_action'];
+    $session_expire_after_seconds = $session_expire_after * 60;
+    if ($seconds_inactive >= $session_expire_after_seconds) {
         session_unset();
         session_destroy();
     }
-    
 }
 
 $_SESSION['last_action'] = time();

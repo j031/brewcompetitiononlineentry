@@ -1,7 +1,7 @@
 <?php
 
 function dropoff_loc($id) {
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
 	
 	$query_dropoffs_user = sprintf("SELECT uid FROM %s WHERE brewerDropOff='%s'",$prefix."brewer",$id);
@@ -17,7 +17,7 @@ function dropoff_loc($id) {
 
 function location_count($location_id) {
 	
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
 	
 	$query_dropoff = sprintf("SELECT uid FROM %s WHERE brewerDropOff='%s'",$prefix."brewer",$location_id);
@@ -42,7 +42,7 @@ function location_count($location_id) {
 
 function dropoff_location_info($location_id) {
 	
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
 	
 	$query_location_info = sprintf("SELECT id,dropLocation,dropLocationName FROM %s WHERE id='%s'",$prefix."drop_off",$location_id);
@@ -60,7 +60,7 @@ function dropoff_location_info($location_id) {
 
 function entries_by_dropoff_loc($id) {
 	
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
 		
 	$query_dropoffs = sprintf("SELECT uid FROM %s WHERE brewerDropOff='%s'",$prefix."brewer",$id);
@@ -153,29 +153,44 @@ function pay_to_print($prefs_pay,$entry_paid) {
 // --------------------------------------------------------
 
 function truncate($string, $your_desired_width) {
+  
   $parts = preg_split('/([\s\n\r]+)/', $string, null, PREG_SPLIT_DELIM_CAPTURE);
   $parts_count = count($parts);
 
   $length = 0;
   $last_part = 0;
+ 
   for (; $last_part < $parts_count; ++$last_part) {
     $length += strlen($parts[$last_part]);
     if ($length > $your_desired_width) { break; }
   }
 
   return implode(array_slice($parts, 0, $last_part));
+  
 }
 
-function user_entry_count($uid) {
+function user_entry_count($uid,$view) {
 	
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
 	
-	$query_with_entries_count = sprintf("SELECT COUNT(*) AS 'count' FROM %s WHERE brewBrewerID='%s' AND brewReceived='1'",$prefix."brewing",$uid);
+	if ($view == "entry") $sort = "id";
+	else $sort = "brewJudgingNumber";
+	
+	$query_with_entries_count = sprintf("SELECT id,brewJudgingNumber FROM %s WHERE brewBrewerID='%s' AND brewReceived='1' ORDER BY %s ASC", $prefix."brewing",$uid,$sort);
 	$with_entries_count = mysqli_query($connection,$query_with_entries_count) or die (mysqli_error($connection));
 	$row_with_entries_count = mysqli_fetch_assoc($with_entries_count);
+	$totalRows_with_entries_count = mysqli_num_rows($with_entries_count);
 	
-	return $row_with_entries_count['count'];
+	do {
+		$judging_numbers[] = sprintf("%06d",$row_with_entries_count['brewJudgingNumber']);
+		$entry_numbers[] = sprintf("%06d",$row_with_entries_count['id']);
+	} while($row_with_entries_count = mysqli_fetch_assoc($with_entries_count));
+	
+	$user_judging_numbers = implode(", ",$judging_numbers);
+	$user_entry_numbers = implode(", ",$entry_numbers);
+	
+	return $totalRows_with_entries_count."^".$user_entry_numbers."^".$user_judging_numbers;
 	
 }
 
@@ -190,7 +205,7 @@ function round_down_to_hundred($number) {
 }
 
 function total_days() {
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
 	
 	$query_sessions = sprintf("SELECT judgingDate FROM %s", $prefix."judging_locations");
@@ -208,7 +223,7 @@ function total_days() {
 }
 
 function total_sessions() {
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
 	
 	$query_sessions = sprintf("SELECT judgingRounds FROM %s", $prefix."judging_locations");
@@ -225,7 +240,7 @@ function total_sessions() {
 }
 
 function total_flights () {
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	mysqli_select_db($connection,$database);	
 	$query_tables = sprintf("SELECT id FROM %s", $prefix."judging_tables");
 	$tables = mysqli_query($connection,$query_tables) or die (mysqli_error($connection));
@@ -311,7 +326,7 @@ function total_points($total_entries,$method) {
 
 // calculate a Judge's points
 function judge_points($uid,$bos) { 
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
 	require(INCLUDES.'db_tables.inc.php');
 	require(DB.'judging_locations.db.php');
@@ -357,7 +372,7 @@ function judge_points($uid,$bos) {
 function steward_points($uid) {
 	
 	/*
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
 	require(INCLUDES.'db_tables.inc.php');
 	require(DB.'judging_locations.db.php');
@@ -388,7 +403,7 @@ function steward_points($uid) {
 }
 
 function bos_points($uid) {
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
 	require(INCLUDES.'db_tables.inc.php');
 	$query_bos_judges = sprintf("SELECT staff_judge_bos FROM %s WHERE uid='%s'",$prefix."staff",$uid);

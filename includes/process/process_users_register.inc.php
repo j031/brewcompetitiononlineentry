@@ -7,6 +7,8 @@
  
 if (isset($_SERVER['HTTP_REFERER'])) {
 	
+	$captcha_success = FALSE;
+	
 	// Gather, convert, and/or sanitize info from the form
 	if (isset($_POST['brewerJudgeID'])) {
 		$brewerJudgeID = $_POST['brewerJudgeID'];
@@ -121,12 +123,21 @@ if (isset($_SERVER['HTTP_REFERER'])) {
 	
 	// CAPCHA check
 	if ($filter != "admin") {
-		require_once(INCLUDES.'recaptchalib.inc.php');
-		$privatekey = "6LdquuQSAAAAAHkf3dDRqZckRb_RIjrkofxE8Knd";
-		$resp = recaptcha_check_answer ($privatekey, $_SERVER["REMOTE_ADDR"], $_POST["recaptcha_challenge_field"], $_POST["recaptcha_response_field"]);
+		
+		if ((isset($_POST['g-recaptcha-response'])) && (!empty($_POST['g-recaptcha-response']))) {
+			
+			$privatekey = "6LdUsBATAAAAAMPhk5yRSmY5BMXlBgcTjiLjiyPb";
+			
+			$verify_response = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret='.$privatekey.'&response='.$_POST['g-recaptcha-response']);
+			$response_data = json_decode($verify_response);
+			
+			if (($_SERVER['SERVER_NAME'] = $response_data->hostname) && ($response_data->success)) $captcha_success = TRUE;
+			
+		}
+		
 	}
 	
-	if (($view == "default") && ($filter != "admin") && (!$resp->is_valid)) {
+	if (($view == "default") && ($filter != "admin") && (!$captcha_success)) {
 		setcookie("user_name", $username, 0, "/");
 		setcookie("user_name2", $username2, 0, "/");
 		setcookie("password", $_POST['password'], 0, "/");
@@ -252,7 +263,6 @@ if (isset($_SERVER['HTTP_REFERER'])) {
 			mysqli_real_escape_string($connection,$insertSQL);
 			$result = mysqli_query($connection,$insertSQL) or die (mysqli_error($connection));
 	
-			//echo $insertSQL."<br />";
 			// Get the id from the "users" table to insert as the uid in the "brewer" table
 			$query_user= "SELECT * FROM $users_db_table WHERE user_name = '$username'";
 			$user = mysqli_query($connection,$query_user) or die (mysqli_error($connection));
@@ -393,31 +403,6 @@ if (isset($_SERVER['HTTP_REFERER'])) {
 							   );
 			}
 			
-			/*
-			if(NHC) {
-				$updateSQL =  sprintf("INSERT INTO nhcentrant (
-				uid, 
-				firstName, 
-				lastName, 
-				email,
-				AHAnumber,
-				regionPrefix
-				) 
-				VALUES 
-				(%s, %s, %s, %s, %s, %s)",
-								   GetSQLValueString($row_user['id'], "int"),
-								   GetSQLValueString($first_name, "text"),
-								   GetSQLValueString($last_name, "text"),
-								   GetSQLValueString($username, "text"),
-								   GetSQLValueString($brewerAHA, "text"),
-								   GetSQLValueString($prefix, "text"));
-				
-				mysqli_real_escape_string($connection,$updateSQL);
-				$result = mysqli_query($connection,$updateSQL) or die (mysqli_error($connection));
-	
-			}
-			*/
-			
 			mysqli_real_escape_string($connection,$insertSQL);
 			$result = mysqli_query($connection,$insertSQL) or die (mysqli_error($connection));
 	
@@ -436,8 +421,8 @@ if (isset($_SERVER['HTTP_REFERER'])) {
 					$label_name = $label_contact." ".$label_name;
 					$label_username = $label_contact." ".$label_username;
 					$label_address = $label_organization." ".$label_address;
-					$phone_primary = $label_contact." ".$phone_primary;
-					$phone_secondary = $label_contact." ".$phone_secondary;
+					$label_phone_primary = $label_contact." ".$label_phone_primary;
+					$label_phone_secondary = $label_contact." ".$label_phone_secondary;
 					
 					$show_entrant_fields = FALSE;
 					
@@ -451,9 +436,9 @@ if (isset($_SERVER['HTTP_REFERER'])) {
 				
 				$message = "<html>" . "\r\n";
 				$message .= "<body>" . "\r\n";
-				if (isset($_SESSION['contestLogo'])) $message .= "<p align='center'><img src='".$base_url."/user_images/".$_SESSION['contestLogo']."' height='150'></p>";
+				if (!empty($_SESSION['contestLogo'])) $message .= "<p align='center'><img src='".$base_url."user_images/".$_SESSION['contestLogo']."' height='150'></p>";
 				$message .= "<p>".$first_name.",</p>";
-				if ($filter == "admin") $message .= sprintf("<p>%s</p>",$register_text_037,$register_text_038);
+				if ($filter == "admin") $message .= sprintf("<p>%s</p>",$register_text_038);
 				else $message .= sprintf("<p>%s</p>",$register_text_039);
 				$message .= "<table cellpadding='5' border='0'>";
 				if (isset($_POST['brewerBreweryName'])) $message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$label_organization,$_POST['brewerBreweryName']);
@@ -463,8 +448,8 @@ if (isset($_SERVER['HTTP_REFERER'])) {
 				$message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$label_security_question,$_POST['userQuestion']);
 				$message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$label_security_answer,$userQuestionAnswer);
 				$message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s<br>%s, %s %s</td></tr>",$label_address,$address,$city,strip_tags($_POST['brewerState']),strip_tags($_POST['brewerZip']));
-				$message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$phone_primary,$brewerPhone1);
-				if (isset($brewerPhone2)) 				$message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$phone_secondary,$brewerPhone2);
+				$message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$label_phone_primary,$brewerPhone1);
+				if (isset($brewerPhone2)) $message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$label_phone_secondary,$brewerPhone2);
 				
 				if ($show_entrant_fields) {
 					
@@ -472,10 +457,10 @@ if (isset($_SERVER['HTTP_REFERER'])) {
 					if ($brewerSteward == "Y") $brewerSteward = $label_yes; else $brewerSteward = $label_no;
 					if ($_POST['brewerStaff'] == "Y") $brewerStaff = $label_yes; else $brewerStaff = $label_no;
 					
-					if (isset($brewerClubs)) 			$message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$label_club,$brewerClubs);
-					if (isset($brewerAHA)) 				$message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$label_aha_number,$brewerAHA);
-					if (isset($_POST['brewerStaff']))	$message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$label_staff,$brewerStaff);
-					if (isset($_POST['brewerJudge'])) 	$message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$label_judge,$brewerJudge);
+					if (isset($brewerClubs)) $message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$label_club,$brewerClubs);
+					if (isset($brewerAHA)) $message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$label_aha_number,$brewerAHA);
+					if (isset($_POST['brewerStaff']))$message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$label_staff,$brewerStaff);
+					if (isset($_POST['brewerJudge'])) $message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$label_judge,$brewerJudge);
 					if (isset($_POST['brewerSteward'])) $message .= sprintf("<tr><td valign='top'><strong>%s:</strong></td><td valign='top'>%s</td></tr>",$label_steward,$brewerSteward);
 					
 				}

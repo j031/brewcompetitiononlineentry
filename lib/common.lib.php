@@ -13,7 +13,7 @@ include (LIB.'date_time.lib.php');
 include (INCLUDES.'version.inc.php');
 
 // ------------------ VERSION CHECK ------------------  
-// Current version is 2.1.9.0, change version in system table if not
+// Current version is 2.1.10.0, change version in system table if not
 // If there are NO database structure or data updates for the current version,
 // USE THIS FUNCTION ONLY IF THERE ARE *NOT* ANY DB TABLE OR DATA UPDATES
 // OTHERWISE, DEFINE/UPDATE THE VERSION VIA THE UPDATE PROCEDURE
@@ -25,7 +25,7 @@ function version_check($version,$current_version) {
 	if ($version != $current_version) {
 				
 		// Fix typo in styles
-		$updateSQL = sprintf("UPDATE %s SET version='%s', version_date='%s' WHERE id=%s",$prefix."system","2.1.9.0","2017-01-031","1");
+		$updateSQL = sprintf("UPDATE %s SET version='%s', version_date='%s' WHERE id=%s",$prefix."system","2.1.10.0","2017-07-15","1");
 		mysqli_real_escape_string($connection,$updateSQL);
 		$result = mysqli_query($connection,$updateSQL) or die (mysqli_error($connection));
 		
@@ -134,7 +134,7 @@ function build_form_action($base_url,$section,$go,$action,$filter,$id,$dbTable,$
 
 function build_public_url($section="default",$go="default",$action="default",$id="default",$sef,$base_url) {
 	
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	if (NHC) {
 		$url = "index.php?section=".$section;
 		if ($go != "default") $url .= "&amp;go=".$go;
@@ -284,7 +284,7 @@ function random_generator($digits,$method){
 
 function relocate($referer,$page,$msg,$id,$keep_id="default") {
 	
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	
 	// Break URL into an array
 	$parts = parse_url($referer);
@@ -1265,7 +1265,11 @@ function style_convert($number,$type,$base_url="") {
 	switch ($type) {		
 		
 		case "1": 
-				
+		
+		if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {	
+			$style_convert = $row_style['brewStyle']." (Custom Style)";
+		}
+		
 		if ($_SESSION['prefsStyleSet'] == "BJCP2008") {	
 		switch ($number) {	
 			case "01": $style_convert = "Light Lager"; break;
@@ -1732,7 +1736,7 @@ function style_convert($number,$type,$base_url="") {
 		case "7":
 		$a = explode(",",$number);
 		$style_convert = "";
-		$style_convert .= "<ul class=\"list-group\">";
+		$style_convert .= "<ul>";
 		foreach ($a as $value) {
 			$styles_db_table = $prefix."styles";
 			$query_style = sprintf("SELECT brewStyleGroup,brewStyleNum,brewStyle,brewStyleOwn FROM %s WHERE id='%s'",$styles_db_table,$value);
@@ -1742,8 +1746,8 @@ function style_convert($number,$type,$base_url="") {
 			if ($row_style['brewStyle'] == "Soured Fruit Beer") $style_name = "Wild Specialty Beer";
 			else $style_name = $row_style['brewStyle'];
 			
-			if ($row_style['brewStyleOwn'] == "bcoe") $style_convert .= "<li class=\"list-group-item\">".ltrim($row_style['brewStyleGroup'],"0").$row_style['brewStyleNum'].": ".$style_name."</li>";
-			else $style_convert .= "<li class=\"list-group-item\">".$label_custom_style.": ".$row_style['brewStyle']."</li>";
+			if ($row_style['brewStyleOwn'] == "bcoe") $style_convert .= "<li>".ltrim($row_style['brewStyleGroup'],"0").$row_style['brewStyleNum'].": ".$style_name."</li>";
+			else $style_convert .= "<li>".$label_custom_style.": ".$row_style['brewStyle']."</li>";
 		}
 		$style_convert .= "</ul>";
 		
@@ -1780,6 +1784,8 @@ function style_convert($number,$type,$base_url="") {
 
 function get_table_info($input,$method,$table_id,$dbTable,$param) {
 	
+	
+	
 	// Define Vars
 	require(CONFIG.'config.php');
 	require(LANG.'language.lang.php');
@@ -1792,18 +1798,25 @@ function get_table_info($input,$method,$table_id,$dbTable,$param) {
 		$judging_scores_bos_db_table = $prefix."judging_scores_bos";
 		$styles_db_table = $prefix."styles";
 		$brewing_db_table = $prefix."brewing";
+		$styleSet = $_SESSION['prefsStyleSet'];
 	}
 	
 	// Archives
 	else {
-		$suffix = ltrim(get_suffix($dbTable), "_");
-		$suffix = "_".$suffix;
+		$suffix_1 = ltrim(get_suffix($dbTable), "_");
+		$suffix = "_".$suffix_1;
 		$judging_tables_db_table = $prefix."judging_tables".$suffix;
 		$judging_locations_db_table = $prefix."judging_locations".$suffix;
 		$judging_scores_db_table = $prefix."judging_scores".$suffix;
 		$judging_scores_bos_db_table = $prefix."judging_scores_bos".$suffix;
 		$styles_db_table = $prefix."styles";
+		$archive_db_table = $prefix."archive";
 		$brewing_db_table = $prefix."brewing".$suffix;
+		
+		$query_archive = sprintf("SELECT * FROM %s WHERE archiveSuffix='%s'",$archive_db_table,$suffix_1);
+		$archive = mysqli_query($connection,$query_archive) or die (mysqli_error($connection));
+		$row_archive = mysqli_fetch_assoc($archive);
+		$styleSet = $row_archive['archiveStyleSet'];
 	}
 		
 	// Get info about the table from the DB	
@@ -1834,7 +1847,7 @@ function get_table_info($input,$method,$table_id,$dbTable,$param) {
 	if ($method == "unassigned") {
 		$return = "";
 	
-		if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
+		if (strpos($styleSet,"BABDB") !== false) {
 			foreach ($_SESSION['styles'] as $ba_styles => $stylesData) {
 				if (is_array($stylesData) || is_object($stylesData)) {
 					foreach ($stylesData as $key => $ba_style) {
@@ -1947,7 +1960,7 @@ function get_table_info($input,$method,$table_id,$dbTable,$param) {
 				
 				foreach ($a as $value) {
 					
-					if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
+					if (strpos($styleSet,"BABDB") !== false) {
 						
 						if ($value < 500) $c[] = $_SESSION['styles']['data'][$value-1]['name'].",&nbsp;";
 						
@@ -1992,7 +2005,7 @@ function get_table_info($input,$method,$table_id,$dbTable,$param) {
 		
 		foreach ($a as $value) {
 			
-			if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
+			if (strpos($styleSet,"BABDB") !== false) {
 				
 				if ($value < 500) {
 					$query_style_count = sprintf("SELECT COUNT(*) as count FROM %s WHERE brewSubCategory='%s' AND brewReceived='1'", $brewing_db_table, $value);
@@ -2045,7 +2058,7 @@ function get_table_info($input,$method,$table_id,$dbTable,$param) {
 	// Get total number of scored entries at table	
 	if (($method == "score_total") && ($param == "default")) {
 		
-		$query_score_count = sprintf("SELECT COUNT(*) as 'count' FROM %s WHERE scoreTable='%s'", $judging_scores_db_table, $id);
+		$query_score_count = sprintf("SELECT COUNT(*) as 'count' FROM %s WHERE scoreTable='%s'", $judging_scores_db_table, $table_id);
 		$score_count = mysqli_query($connection,$query_score_count) or die (mysqli_error($connection));
 		$row_score_count = mysqli_fetch_assoc($score_count);
 		
@@ -2064,7 +2077,7 @@ function get_table_info($input,$method,$table_id,$dbTable,$param) {
 					
 				foreach ($a as $value) {
 					
-					if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
+					if (strpos($styleSet,"BABDB") !== false) {
 						
 						if ($value < 500) {
 							$query_style_count = sprintf("SELECT COUNT(*) as count FROM %s WHERE brewSubCategory='%s' AND brewReceived='1'", $brewing_db_table, $value);
@@ -2120,7 +2133,7 @@ function get_table_info($input,$method,$table_id,$dbTable,$param) {
 		
 		$input = explode("^",$input);
 		 
-		if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
+		if (strpos($styleSet,"BABDB") !== false) {
 			if (isset($input[2])) $query = sprintf("SELECT COUNT(*) as 'count' FROM %s WHERE brewCategorySort='%s' AND brewSubCategory='%s' AND brewReceived='1'", $brewing_db_table, $input[1], $input[0]);
 			else $query = sprintf("SELECT COUNT(*) as 'count' FROM %s WHERE brewSubCategory='%s' AND brewReceived='1'", $brewing_db_table, $input[1]);
 			
@@ -2143,7 +2156,7 @@ function get_table_info($input,$method,$table_id,$dbTable,$param) {
 					
 		foreach ($a as $value) {
 			
-			if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
+			if (strpos($styleSet,"BABDB") !== false) {
 				
 				$query_style_count = sprintf("SELECT COUNT(*) as count FROM %s brewSubCategory='%s' AND brewReceived='1'", $brewing_db_table, $value);
 				$style_count = mysqli_query($connection,$query_style_count) or die (mysqli_error($connection));
@@ -2408,25 +2421,19 @@ function brewer_info($uid,$filter="default") {
 	$r .= $row_brewer_info['brewerFirstName']."^"; 		// 0
 	$r .= $row_brewer_info['brewerLastName']."^"; 		// 1
 	$r .= $row_brewer_info['brewerPhone1']."^"; 		// 2
-	if (isset($row_brewer_info['brewerJudgeRank'])) $r .= $row_brewer_info['brewerJudgeRank']."^";
-	else $r .= "Non-BJCP^";								// 3
-	if (isset($row_brewer_info['brewerJudgeID'])) $r .= $row_brewer_info['brewerJudgeID']."^";
-	else $r .= "&nbsp;^";								// 4
-	if (isset($row_brewer_info['brewerJudgeBOS'])) $r .= $row_brewer_info['brewerJudgeBOS']."^";
-	else $r .= "&nbsp;^";								// 5
+	if (isset($row_brewer_info['brewerJudgeRank'])) $r .= $row_brewer_info['brewerJudgeRank']."^"; else $r .= "Non-BJCP^"; // 3
+	if (isset($row_brewer_info['brewerJudgeID'])) $r .= $row_brewer_info['brewerJudgeID']."^"; else $r .= "&nbsp;^"; // 4
+	if (isset($row_brewer_info['brewerJudgeBOS'])) $r .= $row_brewer_info['brewerJudgeBOS']."^"; else $r .= "&nbsp;^"; // 5
 	$r .= $row_brewer_info['brewerEmail']."^";			// 6
 	$r .= $row_brewer_info['uid']."^";					// 7
-	if (isset($row_brewer_info['brewerClubs'])) $r .= $row_brewer_info['brewerClubs']."^";
-	else $r .= "&nbsp;^";								// 8
-	if (isset($row_brewer_info['brewerDiscount'])) $r .= $row_brewer_info['brewerDiscount']."^";
-	else $r .= "&nbsp;^";								// 9
+	if (isset($row_brewer_info['brewerClubs'])) $r .= $row_brewer_info['brewerClubs']."^"; else $r .= "&nbsp;^"; // 8
+	if (isset($row_brewer_info['brewerDiscount'])) $r .= $row_brewer_info['brewerDiscount']."^"; else $r .= "&nbsp;^"; // 9
 	$r .= $row_brewer_info['brewerAddress']."^";		// 10
 	$r .= $row_brewer_info['brewerCity']."^";			// 11
 	$r .= $row_brewer_info['brewerState']."^";			// 12
 	$r .= $row_brewer_info['brewerZip']."^";			// 13
 	$r .= $row_brewer_info['brewerCountry']."^";		// 14
-	if (isset($row_brewer_info['brewerBreweryName'])) $r .= $row_brewer_info['brewerBreweryName']; // 15
-	else $r .= "&nbsp;^";								// 15
+	if (isset($row_brewer_info['brewerBreweryName'])) $r .= $row_brewer_info['brewerBreweryName']; else $r .= "&nbsp;^"; // 15
 	return $r;
 }
 
@@ -2624,9 +2631,7 @@ function brewer_assignment($user_id,$method,$id,$dbTable,$filter,$archive="defau
 	
 	if ($row_staff_check['staff_judge'] == "1") $assignment = strtolower($label_judges);
 	elseif ($row_staff_check['staff_steward'] == "1") $assignment = strtolower($label_stewards);
-	else $assignment = "";
-	
-	
+	else $assignment = "";	
 	
 	if ($totalRows_staff_check > 0) {
 		$r[] = "";
@@ -2635,8 +2640,8 @@ function brewer_assignment($user_id,$method,$id,$dbTable,$filter,$archive="defau
 					if ($row_staff_check['staff_organizer'] == "1") $r[] .= strtolower($label_organizer);
 					if ($row_staff_check['staff_judge_bos'] == "1") $r[] .= "BOS";
 					if (($id == "default") && ($dbTable == "default") && ($filter != $assignment)) {
-						if ($row_staff_check['staff_judge'] == "1") $r[] .= "<a href=\"#\" data-toggle=\"modal\" data-target=\"#assignment-modal-".$uid."\">".$label_judge."</a>";
-						if ($row_staff_check['staff_steward'] == "1") $r[] .= "<a href=\"#\" data-toggle=\"modal\" data-target=\"#assignment-modal-".$uid."\">".$label_steward."</a>";
+						if ($row_staff_check['staff_judge'] == "1") $r[] .= "<a href=\"#\" data-toggle=\"modal\" data-target=\"#assignment-modal-".$user_id."\">".$label_judge."</a>";
+						if ($row_staff_check['staff_steward'] == "1") $r[] .= "<a href=\"#\" data-toggle=\"modal\" data-target=\"#assignment-modal-".$user_id."\">".$label_steward."</a>";
 					}
 					else {
 						if ($row_staff_check['staff_judge'] == "1") $r[] .= $label_judge;
@@ -2659,10 +2664,10 @@ function brewer_assignment($user_id,$method,$id,$dbTable,$filter,$archive="defau
 	else $r = "";
 	
 	if ($method == "3") {
-		if ($uid == "judges") $r = $label_judges; 
-		elseif ($uid == "stewards") $r = $label_stewards; 
-		elseif ($uid == "staff") $r = $label_staff;
-		elseif ($uid == "bos") $r = "BOS ".$label_judges;
+		if ($filter == "judges") $r = $label_judges; 
+		elseif ($filter == "stewards") $r = $label_stewards; 
+		elseif ($filter == "staff") $r = $label_staff;
+		elseif ($filter == "bos") $r = "BOS ".$label_judges;
 		else $r = "";
 	}
 
@@ -2690,13 +2695,13 @@ function entries_unconfirmed($user_id) {
 
 function check_special_ingredients($style,$style_version) {
 	
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
 	$style_explodies = explode("-",$style);
 	
 	if (($style_explodies[0] < 34) && (strpos($style_version,"BABDB") !== false)) {
 		
-		include(INCLUDES.'ba_constants.inc.php');
+		include (INCLUDES.'ba_constants.inc.php');
 		
 		if (in_array($style,$ba_special)) return TRUE;
 		else return FALSE;
@@ -3138,7 +3143,7 @@ function judge_entries($uid,$method) {
 }
 
 function judging_winner_display($delay) {
-			include(CONFIG.'config.php');
+			include (CONFIG.'config.php');
 			mysqli_select_db($connection,$database);
 			$query_check = sprintf("SELECT judgingDate FROM %s ORDER BY judgingDate DESC LIMIT 1", $prefix."judging_locations");
 			$check = mysqli_query($connection,$query_check) or die (mysqli_error($connection));
@@ -3209,7 +3214,7 @@ function check_judging_flights() {
 	// If so, return TRUE
 	// If not, return FALSE
 	
-	include(CONFIG.'config.php');
+	include (CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
 	
 	$query_check_tables = sprintf("SELECT COUNT(*) AS 'count' FROM %s", $prefix."judging_tables");
@@ -3230,7 +3235,7 @@ function check_judging_flights() {
 }
 
 function get_archive_count($table) {
-	include(CONFIG.'config.php'); 	
+	include (CONFIG.'config.php'); 	
 	mysqli_select_db($connection,$database);
 	$query_archive_count = "SELECT COUNT(*) as 'count' FROM `$table`";
 	$archive_count = mysqli_query($connection,$query_archive_count) or die (mysqli_error($connection));
@@ -3627,7 +3632,7 @@ function convert_to_ba() {
 	require(CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
 	
-	include(INCLUDES.'ba_constants.inc.php');
+	include (INCLUDES.'ba_constants.inc.php');
 	
 	$query_check = sprintf("SELECT id, brewCategory, brewCategorySort, brewSubCategory, brewStyle, brewMead1, brewMead2, brewMead3, brewInfo FROM %s", $prefix."brewing");
 	$check = mysqli_query($connection,$query_check) or die (mysqli_error($connection));
@@ -3714,7 +3719,7 @@ function convert_to_pro() {
 	require(CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
 	
-	include(INCLUDES.'ba_constants.inc.php');
+	include (INCLUDES.'ba_constants.inc.php');
 	
 	$query_check = sprintf("SELECT id FROM %s", $prefix."brewer");
 	$check = mysqli_query($connection,$query_check) or die (mysqli_error($connection));
@@ -3723,33 +3728,7 @@ function convert_to_pro() {
 	$return = "";
 	
 	$breweries = array(
-	"Resolute Brewing Company",
-	"Wicked Weed Brewing",
-	"Firestone Walker Brewing Company",
-	"Dry Dock Brewing Company",
-	"Bruz Beers",
-	"Jessup Farm Barrel House",
-	"Trve Brewing Company",
-	"Lost Highway Brewing Company",
-	"105 West Brewing Company",
-	"Rockyard Brewing Company",
-	"Caution Brewing Company",
-	"Bierstadt Lagerhaus",
-	"Great Divide Brewing Company",
-	"Crooked Stave Brewing Company",
-	"Jagged Mountain Craft Brewery",
-	"Ratio Beer Works",
-	"Epic Brewing Company",
-	"Our Mutual Friend Brewing",
-	"Station 26 Brewing Company",
-	"Liquid Mechanics Brewing Company",
-	"Blackshirt Brewing Company",
-	"Spangalang Brewery",
-	"Mockery Brewing Company",
-	"Lone Tree Brewing Company",
-	"Factotum Brewhouse",
-	"Renegade Brewing Company",
-	"Black Sky Brewery"
+"10 Barrel Brewing Company","105 West Brewing Company","12 Degree Brewing","14er Brewing Company","3 Freaks Brewery","300 Suns Brewing","38 State Brewing Company","4 Noses Brewing Company","4B&rsquo;s Brewery","7 Hermits Brewing Company","Alpine Dog Brewing Company","Anheuser-Busch","Animas Brewing Company","Asher Brewing Company","Aspen Brewing Company","Avalanche Brewing Company","Avery Brewing Company","Backcountry Brewery","Baere Brewing Company","Banded Oak Brewing Company","Barnett &amp; Son Brewing Company","Barrels &amp; Bottles Brewery","Beer By Design","Berthoud Brewing Company","Beryl&rsquo;s Beer Company","Bierstadt Lagerhaus","BierWerks Brewery","Big Beaver Brewing Company","Big Thompson Brewery","BJ&rsquo;s Restaurant &amp; Brewery ","Black Bottle Brewery","Black Project Spontaneous &amp; Wild Ales","Black Shirt Brewing Company","Black Sky Brewery","Blue Moon Brewing Co. at the Sandlot","Blue Moon Brewing Company","Blue Spruce Brewing Company","Boggy Draw Brewery","Bonfire Brewing","Bootstrap Brewing Company","Bottom Shelf Brewery"," Beer Company"," Brewery"," Brewery &amp; Pub","BREW Pub &amp; Kitchen","Brewability Lab","Brewery Rickoli","Briar Common Brewery + Eatery","Bristol Brewing Company","Brix Taphouse &amp; Brewery","Broken Compass Brewery","Broken Plow Brewery","BRU Handbuilt Ales &amp; Eats","Brues Alehouse Brewing Company","Bruz Beers","Buckhorn Brewers","Bull &amp; Bush Pub &amp; Brewery","Butcherknife Brewing Company","Call to Arms Brewing Company","Cannonball Creek Brewing Company","Capitol Creek Brewery","Carbondale Beer Works","Carver Brewing Company","Casey Brewing &amp; Blending"," Beer Company","CAUTION: Brewing Company","CB &amp; Potts Restaurant &amp; Brewery Englewood","CB &amp; Potts Restaurant &amp; Brewery Flatirons","CB &amp; Potts Restaurant &amp; Brewery ","CB &amp; Potts Restaurant &amp; Brewery ","CB &amp; Potts Restaurant &amp; Brewery ","Cellar West Artisan Ales","Cerberus Brewing Company","Cerebral Brewing","Chain Reaction Brewing","Cheluna Brewing Company","City Star Brewing","CO-Brew","Cogstone Brewing Company","Colorado Boy Pizzeria &amp; Brewery","Colorado Boy Pub &amp; Brewery","Colorado Mountain Brewery","Colorado Mountain Brewery at the Roundhouse","Colorado Plus Brew Pub","Comrade Brewing Company","CooperSmith&rsquo;s Pub &amp; Brewing Company","Copper Club Brewing Company","Copper Kettle Brewing Company","Crabtree Brewing Company","Crazy Mountain Brewing Company","Crazy Mountain Tap Room","Creede Brewing Company","Crestone Brewing Company","Crooked Stave Artisan Beer Project","Crow Hop Brewing Company","Crystal Springs Brewing Company","Dad &amp; Dude&rsquo;s Breweria","DC Oakes Brewhouse and Eatery","De Steeg Brewing","Dead Hippie Brewing","Declaration Brewing","Deep Draft Brewing Company","Arvada Beer Company","Diebolt Brewing Company","Dillon DAM Brewery","Dodgeton Creek Brewing Company","Dolores River Brewery","Dostal Alley Brewpub &amp; Casino","Dry Dock Brewing Company North","Dry Dock Brewing Company South","Echo Brewing Cask and Barrel","Echo Brewing Company","Eddyline Brewery","El Rancho Brewing Company","Elevation Beer Company","Elk Mountain Brewing Company","Epic Brewing Company","Equinox Brewing Company","Estes Park Brewery","Evergreen Tap House &amp; Brewery","Factotum Brewhouse","FATE Brewing Company","FERMÆNTRA","Fiction Beer Company","Fieldhouse Brewing Company","Finkel &amp; Garf Brewing Company","Floodstage Ale Works","Florence Brewing Company","Fossil Craft Beer Company","Front Range Brewing Company","Funkwerks","Gilded Goat Brewing","Glenwood Canyon Brewing Company","Gold Camp Brewing Company","Goldspot Brewing Company","Gordon Biersch Brewery","Gore Range Brewery","Grand Lake Brewing Tavern","Grandma&rsquo;s House","Gravity Brewing","Great Divide Brewing Company","Great Frontier Brewing Company","Great Storm Brewing","Green Mountain Beer Company","Grimm Brothers Brewhouse Taproom","Grist Brewing Company","Grist Brewing Company Lab","Großen Bart Brewery","Guanella Pass Brewing Company","Gunbarrel Brewing Company","Halfpenny Brewing Company","Hideaway Park Brewery","High Alpine Brewing Company","High Hops Brewery","Hogshead Brewery","Holidaily Brewing Company","Horse and Dragon Brewing Company","Horsefly Brewing Company","Intersect Brewing","Iron Bird Brewing Company","Ironworks Brewery &amp; Pub","J Wells Brewery","J. Fargo&rsquo;s Family Dining &amp; Micro Brewery","Jagged Mountain Craft Brewery","JAKs Brewing Company","James Peak Brewery &amp; Smokehouse","Jessup Farm Barrel House","Joyride Brewing Company","Kannah Creek Brewing Company","Kettle and Spoke Brewery","Kokopelli Beer Company","LandLocked Ales","Lariat Lodge Brewing","Launch Pad Brewery","Left Hand Brewing Company","Liquid Mechanics Brewing Company","Little Machine Beer","Living The Dream Brewing Company","Local Relic","Locavore Beer Works","Lone Tree Brewing Company","Lost Highway Brewing Company","Lowdown Brewery + Kitchen","Lumpy Ridge Brewing Company","Mad Jack&rsquo;s Mountain Brewery","Mahogany Ridge Brewery and Grill","Main Street Brewery &amp; Restaurant","Mancos Brewing Company","Manitou Brewing Company","Mash Lab Brewing","Maxline Brewing","McClellan&rsquo;s Brewing Company","MillerCoors Brewing Company","Mockery Brewing","Moffat Station Restaurant and Brewery","Moonlight Pizza &amp; Brewery","Mother Tucker Brewery","Mountain Sun Pub &amp; Brewery","Mountain Tap Brewery","Mountain Toad Brewing","Nano 108 Brewing Company","Never Summer Brewing Company","New Belgium Brewing Company","New Image Brewing Company","New Terrain Brewing Company","Nighthawk Brewery","Odd13 Brewing","Odell Brewing Company","Odyssey Beerwerks","Old Colorado Brewing Company","Open Door Brewing Company","Oskar Blues Grill &amp; Brew","Oskar Blues Tasty Weasel Tap Room (Main Brewery)","Our Mutual Friend Brewing Company","Ouray Brewery","Ourayle House Brewery (Mr. Grumpy Pants)","Outer Range Brewing Company","Pagosa Brewing Company","Palisade Brewing Company","Paradox Beer Company","Parts and Labor Brewing","PDub Brewing Company","Peak to Peak Tap &amp; Brew","Peaks N Pines Brewing Company","Periodic Brewing","Phantom Canyon Brewing Company","Pikes Peak Brewing Company","Pints Pub Brewery &amp; Freehouse","Pitchers Sports Restaurant","Platt Park Brewing Company","Powder Keg Brewing Company","Prost Brewing Company","Pug Ryan&rsquo;s Brewery","Pumphouse Brewery","Rails End Beer Company","Rally King Brewing","Ratio Beerworks","Red Leg Brewing Company","Renegade Brewing Company","Resolute Brewing Company","Revolution Brewing","Riff Raff Brewing Company","River North Brewery","Roaring Fork Beer Company","Rock Bottom Brewery ","Rock Cut Brewing Company","Rockslide Brewery &amp; Restaurant","Rocky Mountain Brewery","Rockyard American Grill &amp; Brewing Company","Royal Gorge Brewing Company","Saint Patrick&rsquo;s Brewing Company","San Luis Valley Brewing Company","Sanitas Brewing Company","Seedstock Brewery","Shamrock Brewing Company","Shine Brewing Company","Shoes &amp; Brews","Ska Brewing Company","SKEYE Brewing","Smiling Toad Brewery","Smugglers Brewpub","Snowbank Brewing","SomePlace Else Brewery","Something Brewery","Soulcraft Brewing","South Park Brewing","Southern Sun Pub &amp; Brewery","Spangalang Brewery","Spice Trade Brewing Company","Square Peg Brewerks","Station 26 Brewing Company","Steamworks Brewing Company","Storm Peak Brewing Company","Storybook Brewing","Strange Craft Beer Company","Suds Brothers Brewery II","Telluride Brewing Company","The Bakers&rsquo; Brewery","The Brew on Broadway","The Eldo Brewery &amp; Taproom","The Industrial Revolution Brewing Company","The Intrepid Sojourner Beer Project","The Peak Bistro &amp; Brewery","The Post Brewing Company","Three Barrel Brewing Company","Three Four Beer Company","Tivoli Brewing Company","Tommyknocker Brewery &amp; Pub","Trinity Brewing Company","Triple S Brewing Company","TRVE Brewing Company","Twisted Pine Brewing Company","Two Rascals Brewing","Two22 Brew","Upslope Brewing Company","Ursula Brewery","Ute Pass Brewing Company","UTurn BBQ","Vail Brewing Company","Verboten Brewing","Very Nice Brewing Company","Veteran Brothers Brewing Company","Vindication Brewing Company","Vine Street Pub &amp; Brewery","Vision Quest Brewing Company","Walter Brewing Company","WeldWerks Brewing Company","West Flanders Brewing Company","Westbound &amp; Down Brewing Company","WestFax Brewing Company"," Brewing Company","Whistle Pig Brewing Company","White Labs Tasting Room","Wibby Brewing","Wild Woods Brewery","WildEdge Brewing Collective","Wiley Roots Brewing Company","Wit&rsquo;s End Brewing Company","Wolfe Brewing Company","Wonderland Brewing Company","Wynkoop Brewing Company","Yampa Valley Brewing Company","Zephyr Brewing Company","Zuni Street Brewing Company","Zwei Brewing"
 	);
 	
 	do {
@@ -3769,11 +3748,13 @@ function convert_to_pro() {
 	
 }
 
+//convert_to_pro();
+
 function remove_sensitive_data() {
 	
 	require(CONFIG.'config.php');
 	mysqli_select_db($connection,$database);
-        include(INCLUDES.'constants.inc.php');
+    include (INCLUDES.'constants.inc.php');
 	
 	$result = "";
 	
@@ -3926,4 +3907,61 @@ function remove_sensitive_data() {
 	return $result;
 		
 }
+
+function verify_token($token,$time) {
+	
+	require(CONFIG.'config.php');
+	mysqli_select_db($connection,$database);
+	
+	// Token is not valid by default
+	$return = 1;
+	
+	$query_check_user = sprintf("SELECT userToken, userTokenTime FROM %s WHERE userToken='%s'", $prefix."users", $token);
+	$check_user = mysqli_query($connection,$query_check_user) or die (mysqli_error($connection));
+	$row_check_user = mysqli_fetch_assoc($check_user);
+	$totalRows_check_user = mysqli_num_rows($check_user);
+	
+	if ($totalRows_check_user == 1) {
+		
+		// Give the user 24 hours to reset their password
+		if (isset($row_check_user['userTokenTime'])) $expired_time = ($row_check_user['userTokenTime'] + 86400);
+		
+		// If the token time wasn't recorded for some reason, default to 4 hours
+		else $expired_time = ($time + 14400);
+		
+		// If within the prescribed timeframe, valid
+		if ($time <= $expired_time) $return = 0; 
+		
+		// Otherwise, expired
+		else $return = 2;
+		
+	}
+	
+	return $return;
+	
+}
+
+// Moved from logincheck.inc.php
+// Clean the data collected in the <form>
+
+function sterilize ($sterilize = NULL) {
+	
+	if ($sterilize == NULL) { 
+		return NULL; 
+	}
+	
+	$check = array (1 => "'", 2 => '"', 3 => '<', 4 => '>');
+	
+	foreach ($check as $value) {
+		$sterilize = str_replace($value, '', $sterilize);
+	}
+	
+	$sterilize = strip_tags($sterilize);
+	$sterilize = stripcslashes($sterilize);
+	$sterilize = stripslashes($sterilize);
+	$sterilize = addslashes($sterilize);
+	
+	return $sterilize;
+}
+
 ?>

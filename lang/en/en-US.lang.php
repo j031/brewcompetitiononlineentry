@@ -1,11 +1,11 @@
 <?php
 /**
- * Module:      en-US.lang.php 
+ * Module:      en-US.lang.php
  * Description: This module houses all display text in the English language.
- * 
+ *
  */
 
-/* 
+/*
 
 --------------------------------------------------------------------------------------------------
 
@@ -14,12 +14,12 @@ To translate this file, first make a copy of it and rename it with the language 
 ==============================
 
 Use ISO 169-2 Standards for and WWW3C Language Tag Standards for naming of language files. Use the
-ALPHA-2 letter code whenever possible. 
+ALPHA-2 letter code whenever possible.
 
-ISO 169-2: 
+ISO 169-2:
 https://www.loc.gov/standards/iso639-2/php/code_list.php
 
-WWW3 Language Tags: 
+WWW3 Language Tags:
 https://www.w3.org/International/articles/language-tags/
 
 WWW3 Choosing a Language Tag:
@@ -27,11 +27,11 @@ https://www.w3.org/International/questions/qa-choosing-language-tags
 
 According to the WWW3:
 
-"Always bear in mind that the golden rule is to keep your language tag as short as possible. Only 
-add further subtags to your language tag *if they are needed to distinguish the language from 
+"Always bear in mind that the golden rule is to keep your language tag as short as possible. Only
+add further subtags to your language tag *if they are needed to distinguish the language from
 something else in the context where your content is used...*
 
-"Unless you specifically need to highlight that you are talking about Italian as spoken in Italy 
+"Unless you specifically need to highlight that you are talking about Italian as spoken in Italy
 you should use it for Italian, and not it-IT. The same goes for any other possible combination."
 
 To determine a subtag, go to the IANA Language Subtag Registry:
@@ -70,7 +70,7 @@ Note that the <em>...</em> tags were not altered. Just the word "Upload" to "Car
 
 */
 
-include(INCLUDES.'url_variables.inc.php');
+include (INCLUDES.'url_variables.inc.php');
 
 if (isset($entry_open)) $entry_open = $entry_open;
 else $entry_open = "";
@@ -100,7 +100,16 @@ if (isset($row_limits['prefsEntryLimitPaid'])) $row_limits['prefsEntryLimitPaid'
 else $row_limits['prefsEntryLimitPaid'] = "";
 
 $php_version = phpversion();
- 
+
+$j_s_text = "";
+if (strpos($section, "step") === FALSE) {
+	if ((isset($judge_limit)) && (isset($steward_limit))) {
+		if (($judge_limit) && (!$steward_limit)) $j_s_text = "Steward"; // missing punctuation intentional
+		elseif ((!$judge_limit) && ($steward_limit)) $j_s_text = "Judge"; // missing punctuation intentional
+		else $j_s_text = "Judge or steward"; // missing punctuation intentional
+	}
+}
+
 // -------------------- Global Labels - mostly used for titles and navigation --------------------
 // All labels are capitalized and without punctuation
 
@@ -143,7 +152,7 @@ $label_brewer = "Brewer";
 $label_cobrewer = "Co-Brewer";
 $label_entry_name = "Entry Name";
 $label_required_info = "Required Info";
-if (strpos($section, "step") === FALSE) $label_character_limit = " character limit - use keywords and abbreviations if space is limited. Characters remaining: "; 
+$label_character_limit = " character limit - use keywords and abbreviations if space is limited.<br>Characters used: ";
 $label_carbonation = "Carbonation";
 $label_sweetness = "Sweetness";
 $label_strength = "Strength";
@@ -193,7 +202,7 @@ $label_form = "Form";
 $label_whole = "Whole";
 $label_pellets = "Pellets";
 $label_plug = "Plug";
-$label_extract = "Extract"; 
+$label_extract = "Extract";
 $label_date = "Date";
 $label_bottled = "Bottled";
 $label_misc = "Miscellaneous";
@@ -254,7 +263,7 @@ $label_drop_off = "Drop-Off Location";
 $label_drop_offs = "Drop-Off Locations";
 $label_club = "Club";
 $label_aha_number = "AHA Member Number";
-$label_org_notes = "Notes to Organizer"; 
+$label_org_notes = "Notes to Organizer";
 $label_avail = "Availability";
 $label_location = "Location";
 $label_judging_avail = "Judging Location Availability";
@@ -297,7 +306,7 @@ $label_entry_fees = "Entry Fees";
 $label_entry_limit = "Entry Limit";
 $label_entry_info = "Entry Info";
 $label_entry_per_entrant = "Per Entrant Limits";
-$label_categories_accepted = "Categories Accepted";
+$label_categories_accepted = "Styles Accepted";
 $label_judging_categories = "Judging Categories";
 $label_entry_acceptance_rules = "Entry Acceptance Rules";
 $label_shipping_info = "Shipping Info";
@@ -337,8 +346,8 @@ $label_custom_style_types = "Custom Style Types";
 $label_assigned_to_table = "Assigned to Table";
 $label_organizer = "Organizer";
 $label_by_table = "By Table";
-$label_by_category = "By Category";
-$label_by_subcategory = "By Sub-Category";
+$label_by_category = "By Style";
+$label_by_subcategory = "By Sub-Style";
 $label_by_last_name = "By Last Name";
 $label_by_table = "By Table";
 $label_by_location = "By Location";
@@ -367,7 +376,7 @@ $label_please_note = "Please Note";
 $label_pull_order = "Pull Order";
 $label_box = "Box";
 $label_sorted = "Sorted";
-$label_subcategory = "Sub-Category";
+$label_subcategory = "Subcategory";
 $label_affixed = "Label Affixed?";
 $label_points = "Points";
 $label_comp_id = "BJCP Competition ID";
@@ -388,6 +397,7 @@ $label_continue = "Continue";
 $label_host = "Host";
 $label_closing_soon = "Closing Soon";
 $label_access = "Access";
+$label_length = "Length";
 
 // Admin
 $label_admin = "Administration";
@@ -458,17 +468,50 @@ $label_select_style = "Select or Search for Your Entry's Style";
 $label_select_country = "Select or Search Your Country";
 $label_select_dropoff = "Select Your Drop-Off Location";
 $label_club_enter = "Enter Club Name";
-$label_secret_05 = "What is your maternal grandmother's maiden name?";
+$label_secret_05 = "What is your maternal grandmother&rsquo;s maiden name?";
 $label_secret_06 = "What was the first name of your first girlfriend or boyfriend?";
-$label_secret_07 = "What was the make and model of your first car?";
+$label_secret_07 = "What was the make and model of your first vehicle?";
 $label_secret_08 = "What was the last name of your third grade teacher?";
-$label_secret_09 = "In what city did you meet your significant other?";
+$label_secret_09 = "In what city or town did you meet your significant other?";
 $label_secret_10 = "What was the first name of your best friend in sixth grade?";
 $label_secret_11 = "What is the name your favorite musical artist or group?";
 $label_secret_12 = "What was your childhood nickname?";
-$label_pro = "Professional Brewer";
+$label_secret_13 = "What is the last name of the teacher who gave you your first failing grade?";
+$label_secret_14 = "What is the name of your favorite childhood friend?";
+$label_secret_15 = "In what town or city did your mother and father meet?";
+$label_secret_16 = "What was childhood telephone number that you remember most including area code?";
+$label_secret_17 = "What was your favorite place to visit as a child?";
+$label_secret_18 = "Where were you when you had your first kiss?";
+$label_secret_19 = "In what city or town was your first job?";
+$label_secret_20 = "In what city or town were you on New Year&rsquo;s 2000?";
+$label_secret_21 = "What is the name of a college you applied to but did not attend?";
+$label_secret_22 = "What is the first name of the boy or girl that you first kissed?";
+$label_secret_23 = "What was the name of your first stuffed animal, doll, or action figure?";
+$label_secret_24 = "In what city or town did you meet your spouse/significant other?";
+$label_secret_25 = "What street did you live on in first grade?";
+$label_secret_26 = "What is the air speed velocity of an unladen swallow?";
+$label_secret_27 = "What is the name of your favorite cancelled TV show?";
+$label_pro = "Professional";
+$label_amateur = "Amateur";
 $label_hosted = "Hosted";
 $label_edition = "Edition";
+$label_pro_comp_edition = "Professional Competition Edition";
+$label_amateur_comp_edition = "Amateur Competition Edition";
+$label_optional_info = "Optional Info";
+$label_or = "Or";
+$label_admin_payments = "Payments";
+$label_payer = "Payer";
+$label_pay_with_paypal = "Pay with PayPal";
+$label_submit = "Submit";
+$label_id_verification_question = "ID Verfication Question";
+$label_id_verification_answer = "ID Verification Answer";
+$label_server = "Server";
+$label_password_reset = "Password Reset";
+$label_id_verification_request = "ID Verification Request";
+$label_new_password = "New Password";
+$label_confirm_password = "Confirm Password";
+$label_with_token = "With Token";
+$label_password_strength = "Password Strength";
 
 // -------------------- Headers --------------------
 // Missing punctuation intentional for all
@@ -495,25 +538,25 @@ $header_text_019 = "Perhaps you have already created an account?";
 $header_text_020 = "If so, log in here.";
 $header_text_021 = "The user name provided is not a valid email address.";
 $header_text_022 = "Please enter a valid email address.";
-$header_text_023 = "The characters you entered in the CAPTCHA section below were not correct.";
+$header_text_023 = "CAPTCHA was not successful.";
 $header_text_024 = "The email addresses you entered do not match.";
 $header_text_025 = "The AHA number you entered is already in the system.";
-$header_text_026 = "Your online payment has been received and is being processed. Please note that you may need wait a few minutes for the payment status to be updated. Be sure to refresh this page or access your entries list.";
+$header_text_026 = "Your online payment has been received and the transaction has been completed. Please note that you may need to wait a few minutes for the payment status to be updated here - be sure to refresh this page or access your entries list. You will receive a payment receipt via email from PayPal.";
 $header_text_027 = "Please make sure to print the receipt and attach it to one of your entries as proof of payment.";
 $header_text_028 = "Your online payment has been cancelled.";
 $header_text_029 = "The code has been verified.";
 $header_text_030 = "Sorry, the code you entered was incorrect.";
-if (strpos($section, "step") === FALSE) $header_text_031 = "You must log in and have admin privileges to access administration functions.";
+$header_text_031 = "You must log in and have admin privileges to access administration functions.";
 $header_text_032 = "Sorry, there was a problem with your last login attempt.";
 $header_text_033 = "Please make sure your email address and password are correct.";
-$header_text_034 = "Your password has been randomly generated and reset to ".$go;
+$header_text_034 = "A password reset token has been generated and emailed to the address associated with your account.";
 $header_text_035 = "- you can now log in using your current username and the new password.";
 $header_text_036 = "You have been logged out.";
 $header_text_037 = "Log in again?";
 $header_text_038 = "Your verification question does not match what is in the database.";
 $header_text_039 = "Your ID verification information has been sent to the email address associated with your account.";
 $header_text_040 = "Your message has been sent to";
-$header_text_041 = "The characters you entered in the CAPTCHA section below were not correct.";
+$header_text_041 = $header_text_023;
 $header_text_042 = "Your email address has been updated.";
 $header_text_043 = "Your password has been updated.";
 $header_text_044 = "Info deleted successfully.";
@@ -521,7 +564,7 @@ $header_text_045 = "You should verify all your entries imported using BeerXML.";
 $header_text_046 = "You have registered.";
 $header_text_047 = "You have reached the entry limit.";
 $header_text_048 = "Your entry was not added.";
-$header_text_049 = "You have reached the entry limit for the sub-category.";
+$header_text_049 = "You have reached the entry limit for the subcategory.";
 $header_text_050 = "Set Up: Install DB Tables and Data";
 $header_text_051 = "Set Up: Create Admin User";
 $header_text_052 = "Set Up: Add Admin User Info";
@@ -535,11 +578,11 @@ $header_text_059 = "Import an Entry Using BeerXML";
 $header_text_060 = "Your entry has been recorded.";
 $header_text_061 = "Your entry has been confirmed.";
 $header_text_065 = "All received entries have been checked and those not assigned to tables have been assigned.";
-$header_text_066 = "Info deleted successfully.";
+$header_text_066 = "Info updated successfully.";
 $header_text_067 = "The suffix you entered is already in use, please enter a different one.";
 $header_text_068 = "The specified competition data has been cleared.";
 $header_text_069 = "Archives created successfully. ";
-$header_text_070 = "Click the archive name to view."; 
+$header_text_070 = "Click the archive name to view.";
 $header_text_071 = "Remember to update your ".$label_admin_comp_info." and your ".$label_admin_judging_loc." if you are starting a new competition.";
 $header_text_072 = "Archive \"".$filter."\" deleted.";
 $header_text_073 = "The records have been updated.";
@@ -588,19 +631,14 @@ $header_text_111 = "All entries have been un-marked as received.";
 $header_text_112 = "You do not have sufficient access privileges to perform this action.";
 $header_text_113 = "You can only edit your own account information.";
 $header_text_114 = "As an admin, you can change a user's account information via Admin > Entries and Particpants > Manage Participants.";
+$header_text_115 = "Results have been published.";
+$header_text_116 = "If you do not receive the email within a reasonable amount of time, contact a competition official or site administrator to reset your password for you.";
 
 // -------------------- Navigation --------------------
 
 
+
 // -------------------- Alerts --------------------
-$j_s_text = "";
-if (strpos($section, "step") === FALSE) {
-	if ((isset($judge_limit)) && (isset($steward_limit))) {
-		if (($judge_limit) && (!$steward_limit)) $j_s_text = "Steward"; // missing punctuation intentional
-		elseif ((!$judge_limit) && ($steward_limit)) $j_s_text = "Judge"; // missing punctuation intentional
-		else $j_s_text = "Judge or steward"; // missing punctuation intentional
-	}
-}
 $alert_text_000 = "Grant users top-level admin and admin access with caution.";
 $alert_text_001 = "Data clean-up completed.";
 $alert_text_002 = "The &#36;setup_free_access variable in config.php is currently set to TRUE.";
@@ -626,34 +664,34 @@ $alert_text_028 = "Entry registration has closed.";
 $alert_text_029 = "Adding entries is not available.";
 $alert_text_030 = "The competition entry limit has been reached.";
 $alert_text_031 = "Your personal entry limit has been reached.";
-if (strpos($section, "step") === FALSE) $alert_text_032 = "You will be able to add entries on or after ".$entry_open."."; else $alert_text_032 = "";
-if (strpos($section, "step") === FALSE) $alert_text_033 = "Registration will open ".$reg_open."."; else $alert_text_033 = "";
+$alert_text_032 = "You will be able to add entries on or after ".$entry_open."."; 
+$alert_text_033 = "Registration will open ".$reg_open.".";
 $alert_text_034 = "Please return then to register your account.";
-if (strpos($section, "step") === FALSE) $alert_text_036 = "Entry registration will open ".$entry_open."."; else $alert_text_036 = "";
+$alert_text_036 = "Entry registration will open ".$entry_open.".";
 $alert_text_037 = "Please return then to add your entries to the system.";
-if (strpos($section, "step") === FALSE) $alert_text_039 = "Judge and steward registration will open ".$judge_open."."; else $alert_text_039 = "";
+$alert_text_039 = "Judge and steward registration will open ".$judge_open.".";
 $alert_text_040 = "Please return then to register as a judge or steward.";
 $alert_text_042 = "Entry registration is open!";
-if ((strpos($section, "step") === FALSE) && ($_SESSION['prefsProEdition'] == 0)) $alert_text_043 = "A total of ".$total_entries." entries have been added to the system as of ".$current_time."."; else $alert_text_043 = "";
+$alert_text_043 = "A total of ".$total_entries." entries have been added to the system as of ".$current_time.".";
 $alert_text_044 = "Registration will close ";
 $alert_text_046 = "The entry limit nearly reached!";
-if ((strpos($section, "step") === FALSE) && ($_SESSION['prefsProEdition'] == 0)) $alert_text_047 = $total_entries." of ".$row_limits['prefsEntryLimit']." maximum entries have been added into the system as of ".$current_time."."; else $alert_text_047 = "";
-$alert_text_049 = "The entry limit has been reached."; 
-if (strpos($section, "step") === FALSE) $alert_text_050 = "The limit of ".$row_limits['prefsEntryLimit']." entries has been reached. No further entries will be accepted."; else $alert_text_050 = "";
+$alert_text_047 = $total_entries." of ".$row_limits['prefsEntryLimit']." maximum entries have been added into the system as of ".$current_time.".";
+$alert_text_049 = "The entry limit has been reached.";
+$alert_text_050 = "The limit of ".$row_limits['prefsEntryLimit']." entries has been reached. No further entries will be accepted.";
 $alert_text_052 = "The paid entry limit has been reached.";
-if (strpos($section, "step") === FALSE) $alert_text_053 = "The limit of ".$row_limits['prefsEntryLimitPaid']." <em>paid</em> entries has been reached. No further entries will be accepted."; else $alert_text_053 = "";
+$alert_text_053 = "The limit of ".$row_limits['prefsEntryLimitPaid']." <em>paid</em> entries has been reached. No further entries will be accepted.";
 $alert_text_055 = "Registration is closed.";
 $alert_text_056 = "If you already registered an account,";
 $alert_text_057 = "log in here"; // lower-case and missing punctuation intentional
 $alert_text_059 = "Entry registration is closed.";
-if ((strpos($section, "step") === FALSE) && ($_SESSION['prefsProEdition'] == 0)) $alert_text_060 = "A total of ".$total_entries." entries were added into the system."; else $alert_text_060 = "";
+$alert_text_060 = "A total of ".$total_entries." entries were added into the system.";
 $alert_text_062 = "Entry drop-off is closed.";
 $alert_text_063 = "Entry bottles are no longer accepted at drop-off locations.";
 $alert_text_065 = "Entry shipping is closed.";
 $alert_text_066 = "Entry bottles are no longer accepted at the shipping location.";
-if (strpos($section, "step") === FALSE) $alert_text_068 = $j_s_text." registration open."; else $alert_text_068 = "";
+$alert_text_068 = $j_s_text." registration open.";
 $alert_text_069 = "Register here"; // missing punctuation intentional
-if (strpos($section, "step") === FALSE) $alert_text_070 = $j_s_text." registration will close ".$judge_closed."."; else $alert_text_070 = "";
+$alert_text_070 = $j_s_text." registration will close ".$judge_closed.".";
 $alert_text_072 = "The limit of registered judges has been reached.";
 $alert_text_073 = "No further judge registrations will be accepted.";
 $alert_text_074 = "Registering as a steward is still available.";
@@ -672,6 +710,7 @@ $alert_email_not_in_use = "Congratulations! The email address you entered is not
 $alert_text_082 = "Since you signed up as a judge or steward, you are not allowed to add entries to your account. Only representatives of an organization are able to add entries to their accounts.";
 $alert_text_083 = "Adding and edting of entries is not available.";
 $alert_text_084 = "As an Administrator, you can add an entry to an organization's account by using the &quot;Add Entry For...&quot; dropdown menu on the Admin &gt; Entries and Participants &gt; Manage Entries page.";
+$alert_text_085 = "You will not be able to print any entry's paperwork (bottle labels, etc.) until payment for it has been confirmed and it has been marked as &quot;paid&quot; below.";
 
 // ----------------------------------------------------------------------------------
 // Public Pages
@@ -692,7 +731,7 @@ $beerxml_text_003 = "The file size is over 2MB.  Please adjust the size and try 
 $beerxml_text_004 = "Invalid file specified.";
 $beerxml_text_005 = "However, it has not been confirmed. To confirm your entry, access your entries list for further instructions. Or, you can add upload another BeerXML entry below.";
 $beerxml_text_006 = "Your server's version of PHP does not support the BeerXML import feature.";
-if (strpos($section, "step") === FALSE) $beerxml_text_007 = "PHP version 5.x or higher is required &mdash; this server is running PHP version ".$php_version."."; else $beerxml_text_007 = "";
+$beerxml_text_007 = "PHP version 5.x or higher is required &mdash; this server is running PHP version ".$php_version.".";
 $beerxml_text_008 = "Browse for your BeerXML compliant file on your hard drive and click <em>Upload</em>.";
 $beerxml_text_009 = "Choose BeerXML File";
 $beerxml_text_010 = "No file chosen...";
@@ -733,9 +772,11 @@ if ($section == "brew") {
 	$brew_text_024 = "Saccharification rest, etc.";
 	$brew_text_025 = "Secondary fermentation in days.";
 	$brew_text_026 = "Other fermentation in days.";
-	
+
 	//v2.1.10
 	$brew_text_027 = "This Brewers Association style requires a statement from the brewer regarding the special nature of the product. See the <a href=\"https://www.brewersassociation.org/resources/brewers-association-beer-style-guidelines/\" target=\"_blank\">BA Style Guidelines</a> for specific guidance.";
+	$brew_text_028 = "***NOT REQUIRED*** Add information here that is detailed in the style guidelines as a characteristic that you MAY declare.";
+	$brew_text_029 = "Admin editing disabled. Your profile is considered a personal profile and not a organizational profile, and thus, not eligible to add entries. To add an entry for an organization, access the Manage Entries list and choose an organization from the &quot;Add an Entry For...&quot; dropdown.";
 }
 
 // -------------------- Brewer (Account) --------------------
@@ -743,7 +784,6 @@ if ($section == "brew") {
 if (($section == "brewer") || ($section == "register") || ($section == "step2") || (($section == "admin") && ($go == "entrant")) || (($section == "admin") && ($go == "judge"))) {
 	$brewer_text_000 = "Please enter only <em>one</em> person's name.";
 	$brewer_text_001 = "Choose one. This question will be used to verify your identity should you forget your password.";
-	// if (strpos($section, "step") === FALSE) $brewer_text_002 = "You can also <a href=\"".$edit_user_password_link."\">change your password now</a> if you wish.";
 	$brewer_text_003 = "To be considered for a GABF Pro-Am brewing opportunity you must be an AHA member.";
 	$brewer_text_004 = "Provide any information that you believe the competition organizer should know (e.g., allergies, special dietary restrictions, shirt size, etc.).";
 	$brewer_text_005 = "Not Applicable / Shipping Entries";
@@ -760,22 +800,22 @@ if (($section == "brewer") || ($section == "register") || ($section == "step2") 
 	$brewer_text_016 = "My participation in this judging is entirely voluntary. I know that participation in this judging involves consumption of alcoholic beverages and that this consumption may affect my perceptions and reactions.";
 	$brewer_text_017 = "Click or tap the button above to expand the preferred styles to judge list.";
 	$brewer_text_018 = "By checking this box, I am effectively signing a legal document wherein I accept responsibility for my conduct, behavior and actions and completely absolve the competition and its organizers, individually or collectively, of responsibility for my conduct, behavior and actions.";
-	
+
 	// v2.1.9
 	$brewer_text_019 = "If you are planning to serve as a judge in any competition, click or tap the button above to enter your judge-related information.";
 	$brewer_text_020 = "Are you willing to serve as a staff member in this competition?";
 	$brewer_text_021 = "Competition staff are people that serve in various roles to assist in the organization and execution of the competition before, during, and after judging. Judges and stewards can also serve as staff members. Staff members can earn BJCP points if the competition is sanctioned.";
-	
+
 	// v2.1.10
 	$brewer_text_022 = "You will be able to identify a co-brewer when adding your entries.";
 	$brewer_text_023 = "Select &quot;None&quot; if you are not affiliated with a club. Select &quot;Other&quot; if your club is not on the list - <strong>be sure to use the search box</strong>.";
 
-}	
+}
 
 // -------------------- Contact --------------------
 
 if ($section == "contact") {
-	
+
 	$contact_text_000 = "Use the links below to contact individuals involved with coordinating this competition:";
 	$contact_text_001 = "Use the form below to contact a competition official. All fields with a star are required.";
 	$contact_text_002 = "Additionally, a copy has been sent to the email address you provided.";
@@ -786,7 +826,7 @@ if ($section == "contact") {
 // -------------------- Default (Home) -------------------
 
 if ($section == "default") {
-		
+
 	$default_page_text_000 = "No drop-off locations have been specified.";
 	$default_page_text_001 = "Add a drop-off location?";
 	$default_page_text_002 = "No judging dates/locations have been specified.";
@@ -809,9 +849,9 @@ if ($section == "default") {
 	$default_page_text_019 = "Download the Best of Show winners in HTML format.";
 	$default_page_text_020 = "Download the winning entries in PDF format.";
 	$default_page_text_021 = "Download the winning entries in HTML format.";
-	$default_page_text_022 = "Thank you for your interest in the"; 
+	$default_page_text_022 = "Thank you for your interest in the";
 	$default_page_text_023 = "organized by";
-	
+
 	$reg_open_text_000 = "Judge and Steward Registration is";
 	$reg_open_text_001 = "Open";
 	$reg_open_text_002 = "If you <em>have not</em> registered and are willing to be a volunteer,";
@@ -827,11 +867,11 @@ if ($section == "default") {
 	$reg_open_text_012 = "please proceed through the registration process";
 	$reg_open_text_013 = "if you already have an account.";
 	$reg_open_text_014 = "use the add an entry form";
-	
+
 	// v2.1.9
 	$reg_open_text_015 = "Judge Registration is";
 	$reg_open_text_016 = "Steward Registration is";
-	
+
 	$reg_closed_text_000 = "Thanks and Good Luck To All Who Entered the";
 	$reg_closed_text_001 = "There are";
 	$reg_closed_text_002 = "registered participants, judges, and stewards.";
@@ -841,18 +881,18 @@ if ($section == "default") {
 	$reg_closed_text_006 = "received and processed entries (this number will update as entries are picked up from drop-off locations and organized for judging).";
 	$reg_closed_text_007 = "Competition judging dates are yet to be determined. Please check back later.";
 	$reg_closed_text_008 = "Map to";
-	
+
 	$judge_closed_000 = "Thanks to all who participated in the";
 	$judge_closed_001 = "There were";
 	$judge_closed_002 = "entries judged and";
 	$judge_closed_003 = "registered participants, judges, and stewards.";
-	
+
 }
 
 // -------------------- Entry Info --------------------
 
 if ($section == "entry") {
-	
+
 	$entry_info_text_000 = "You will be able to create your account beginning";
 	$entry_info_text_001 = "through";
 	$entry_info_text_002 = "Judges and stewards may register beginning";
@@ -875,13 +915,13 @@ if ($section == "entry") {
 	$entry_info_text_019 = "There is a limit of";
 	$entry_info_text_020 = "entries for this competition.";
 	$entry_info_text_021 = "Each entrant is limited to";
-	$entry_info_text_022 = "entry for this competition";
-	$entry_info_text_023 = "entries for this competition";
-	$entry_info_text_024 = "entry per sub-category";
-	$entry_info_text_025 = "entries per sub-category";
+	$entry_info_text_022 = strtolower($label_entry);
+	$entry_info_text_023 = strtolower($label_entries);
+	$entry_info_text_024 = "entry per subcategory";
+	$entry_info_text_025 = "entries per subcategory";
 	$entry_info_text_026 = "exceptions are detailed below";
-	$entry_info_text_027 = "sub-category";
-	$entry_info_text_028 = "sub-categories";
+	$entry_info_text_027 = strtolower($label_subcategory);
+	$entry_info_text_028 = "subcategories";
 	$entry_info_text_029 = "entry for the following";
 	$entry_info_text_030 = "entries for for the following";
 	$entry_info_text_031 = "After creating your account and adding your entries to the system, you must pay your entry fee(s). Accepted payment methods are:";
@@ -899,11 +939,11 @@ if ($section == "entry") {
 	$entry_info_text_043 = "Entry bottles accepted at our drop-off locations from";
 	$entry_info_text_044 = "Map to";
 	$entry_info_text_045 = "Click/Tap for Required Entry Info";
-	$entry_info_text_046 = "If a styles's name is hyperlinked, it has specific entry requirements. Click or tap on the name to view the sub-category's requirements.";
-	
-	//v2.1.10
+	$entry_info_text_046 = "If a styles's name is hyperlinked, it has specific entry requirements. Click or tap on the name to view the subcategory's requirements.";
+
+	// v2.1.10
 	$entry_info_text_047 = "If a style's name is hyperlinked, it has specific entry requirements. Click or tap on the name to access the Brewers Association styles as listed on their website.";
-	
+
 }
 
 // -------------------- Footer --------------------
@@ -913,7 +953,7 @@ if ($section == "entry") {
 // -------------------- List (User Entry List) --------------------
 
 if (($section == "list") || ($section == "account")) {
-	
+
 	$brewer_entries_text_000 = "There is a known issue with printing from the Firefox browser.";
 	$brewer_entries_text_001 = "You have unconfirmed entries.";
 	$brewer_entries_text_002 = "For each entry below with a <span class=\"fa fa-lg fa-exclamation-circle text-danger\"></span> icon, click the <span class=\"fa fa-lg fa-pencil text-primary\"></span> icon to review and confirm all your entry data. Unconfirmed entries may be deleted from the system without warning.";
@@ -930,12 +970,15 @@ if (($section == "list") || ($section == "account")) {
 	$brewer_entries_text_013 = "You will be able to add entries on or after";
 	$brewer_entries_text_014 = "You have not added any entries to the system.";
 	$brewer_entries_text_015 = "You cannot delete your entry at this time.";
+
+	// v2.1.10
+	$brewer_entries_text_016 = "Style Entered NOT Accepted";
+	$brewer_entries_text_017 = "Entries will not be displayed as received until the competition staff has marked them as such in the system. Typically, this occurs AFTER all entries have been collected from all drop-off and shipping locations and sorted.";
 	
 	//v2.1.10
-	$brewer_entries_text_016 = "Style Entered NOT Accepted";
-	
-	
-	
+	$brewer_entries_text_018 = "You will not be able to print this entry's paperwork (bottle labels, etc.) until it has been marked as paid.";
+
+
 	if (SINGLE) $brewer_info_000 = "Hello";
 	else $brewer_info_000 = "Thank you for participating in the";
 	$brewer_info_001 = "Your account details were last updated";
@@ -961,7 +1004,7 @@ if ($section == "past_winners") {
 // -------------------- Pay for Entries --------------------
 
 if ($section == "pay") {
-	
+
 	$pay_text_000 = "the payment window has passed.";
 	$pay_text_001 = "Contact a competition official if you have any questions.";
 	$pay_text_002 = "the following are your options for paying your entry fees.";
@@ -992,30 +1035,27 @@ if ($section == "pay") {
 	$pay_text_027 = "Click <em>My Account</em> above to review your unconfirmed entries.";
 	$pay_text_028 = "You have unconfirmed entries that are <em>not</em> reflected in your fee totals below.";
 	$pay_text_029 = "Please go to your entry list to confirm all your entry data. Unconfirmed entries may be deleted from the system without warning.";
-	
-	//v2.1.10
-	$pay_text_030 = "By clicking the &quot;I Understand&quot; button below, you will be directed to PayPal to make your payment. Once you have <strong>completed</strong> your payment, PayPal will redirect you back to this site. <strong>If your payment was successful, your paid status will be updated automatically. Please note that you may need wait a few minutes for the payment status to be updated.</strong> Be sure to refresh the pay page or access your entries list.";
+
+	// v2.1.10
+	$pay_text_030 = "By clicking the &quot;I Understand&quot; button below, you will be directed to PayPal to make your payment. Once you have <strong>completed</strong> your payment, PayPal will redirect you back to this site and will email you a receipt for the transaction. <strong>If your payment was successful, your paid status will be updated automatically. Please note that you may need wait a few minutes for the payment status to be updated.</strong> Be sure to refresh the pay page or access your entries list.";
 	$pay_text_031 = "About to Leave this Site";
-	
-	
+
+
 }
 
 // -------------------- QR --------------------
 
-if ($section == "qr") {
-	
-	$qr_text_017 = sprintf("%04d",$view[0]);
-	$qr_text_018 = $view[1];
-	$qr_text_019 = sprintf("%06d",$view[1]);
-	$qr_text_020 = sprintf("%04d",$view[0]);
-	
+
+	$qr_text_019 = sprintf("%04d",$view[0]);
+	$qr_text_020 = sprintf("%06d",$view[1]);
+
 	$qr_text_000 = $alert_text_080;
 	$qr_text_001 = $alert_text_081;
-	$qr_text_002 = sprintf("Entry number %s is checked in with <span class=\"text-danger\">%s</span> as its judging number.",$qr_text_017,$qr_text_018);
+	$qr_text_002 = sprintf("Entry number %s is checked in with <span class=\"text-danger\">%s</span> as its judging number.",$qr_text_020,$qr_text_019);
 	$qr_text_003 = "If this judging number is <em>not</em> correct, <strong>re-scan the code and re-enter the correct judging number.";
-	$qr_text_004 = sprintf("Entry number %s is checked in.",$qr_text_018);
-	$qr_text_005 = sprintf("Entry number %s was not found in the database. Set the bottle(s) aside and alert the competition organizer.",$qr_text_018);
-	$qr_text_006 = sprintf("The judging number you entered - %s - is already assigned to entry number %s.",$qr_text_019,$qr_text_020);
+	$qr_text_004 = sprintf("Entry number %s is checked in.",$qr_text_019);
+	$qr_text_005 = sprintf("Entry number %s was not found in the database. Set the bottle(s) aside and alert the competition organizer.",$qr_text_019);
+	$qr_text_006 = sprintf("The judging number you entered - %s - is already assigned to entry number %s.",$qr_text_020,$qr_text_019);
 	$qr_text_007 = "QR Code Entry Check-In";
 	$qr_text_008 = "To check in entries via QR code, please provide the correct password. You will only need to provide the password once per session - be sure to keep the QR Code scanning app open.";
 	$qr_text_009 = "Assign a judging number and/or box number to entry";
@@ -1029,8 +1069,6 @@ if ($section == "qr") {
 	$qr_text_017 = "A QR Code scanning app is required to utilize this feature.";
 	$qr_text_018 = "Launch the app on your mobile device, scan a QR Code located on a bottle label, enter the required password, and check in the entry.";
 	
-}
-
 
 // -------------------- Registration Open --------------------
 
@@ -1038,8 +1076,8 @@ if ($section == "qr") {
 
 // -------------------- Register --------------------
 
-if (($section == "register") || ($action == "register") || ($go == "account")) {
-	
+if (($section == "register") || ($action == "register") || ($go == "account") || ($section == "step2")) {
+
 	$register_text_000 = "Is the volunteer ";
 	$register_text_001 = "Are you ";
 	$register_text_002 = "Registration has closed.";
@@ -1075,9 +1113,8 @@ if (($section == "register") || ($action == "register") || ($go == "account")) {
 	$register_text_032 = "Please provide a primary telephone number.";
 	$register_text_033 = "Only American Homebrewers Association members are eligible for a Great American Beer Festival Pro-Am opportunity.";
 	$register_text_034 = "To register, you must check the box, indicating that you agree to the waiver statement.";
-	
-	//v2.1.10
-	
+
+	// v2.1.10
 	$register_text_035 = "The information you provide beyond your organization's name is strictly for record-keeping and contact purposes.";
 	$register_text_036 = "A condition of entry into the competition is providing this information, including a contact person's email address and phone number. Your organization's name may be displayed should one of your entries place, but no other information will be made public.";
 	$register_text_037 = "Registration Confirmation";
@@ -1087,13 +1124,13 @@ if (($section == "register") || ($action == "register") || ($go == "account")) {
 	$register_text_041 = "log in to your account";
 	$register_text_042 = "and make the necessary changes. Best of luck in the competition!";
 	$register_text_043 = "Please do not reply to this email as it is automatically generated. The originating account is not active or monitored.";
-	$register_text_044 = "Please provide an organization name (brewery, meadery, cidery, distillery, etc.).";
-	$register_text_045 = "Brewery, meadery, cidery, distillery, etc.";
+	$register_text_044 = "Please provide an organization name.";
+	$register_text_045 = "Provide a brewery name, brewpub name, etc. Be sure to check the competition information for types of beverages accepted.";
 	$register_text_046 = "For U.S. organizations only.";
 	$register_text_047 = "";
 	$register_text_048 = "";
 	$register_text_049 = "";
-	
+
 }
 
 // -------------------- Sidebar --------------------
@@ -1124,7 +1161,7 @@ $sidebar_text_022 = "Entry bottles accepted at";
 $sidebar_text_023 = "the shipping location";
 $sidebar_text_024 = "Competition judging dates are yet to be determined. Please check back later.";
 $sidebar_text_025 = "have been added to the system as of";
-	
+
 
 // -------------------- Sponsors --------------------
 // NONE
@@ -1194,7 +1231,7 @@ $user_text_005 = "Your current email address is";
 // -------------------- Volunteers --------------------
 
 if ($section == "volunteers") {
-	
+
 	$volunteers_text_000 = "If you have registered,";
 	$volunteers_text_001 = "and then choose <em>Edit Account</em> from the My Account menu indicated by the";
 	$volunteers_text_002 = "icon on the top menu";
@@ -1204,38 +1241,43 @@ if ($section == "volunteers") {
 	$volunteers_text_006 = "access your account";
 	$volunteers_text_007 = "to see if you have volunteered to be a judge or steward";
 	$volunteers_text_008 = "If you are willing to judge or steward, please return to register on or after";
-	
+
 	// v2.1.9
 	$volunteers_text_009 = "If you would like to volunteer to be a competition staff member, please register or update your account to indicate that you wish to be a part of the competition staff.";
 	$volunteers_text_010 = "";
-	
+
 }
 
-if ($section == "login") { 
-	$login_text_000 = "You are already logged in.";
-	$login_text_001 = "There is no email address in the system that matches the one you entered.";
-	$login_text_002 = "Try again?";
-	$login_text_003 = "Have you registered your account yet?";
-	$login_text_004 = "Did you forget your password?";
-	$login_text_005 = "If so, click here to reset it.";
-	$login_text_006 = "To reset your password, enter the email address you used when you registered.";
-	$login_text_007 = "Verify";
-	$login_text_008 = "Randomly generated.";
-	$login_text_009 = "<strong>Unavailable.</strong> Your account was created by an administrator and your &quot;secret answer&quot; was randomly generated. Please contact a website administrator to recover or change your password.";
-	$login_text_010 = "Or, use the email option below.";
-	$login_text_011 = "Your security question is...";
-	$login_text_012 = "If you didn't receive the email,";
-	$login_text_013 = "An email will be sent to you with your verification question and answer. Be sure to check your SPAM folder.";
-	$login_text_014 = "click here to resend it to";
-	$login_text_015 = "Can't remember the answer to your security question?";
-	$login_text_016 = "Get it emailed to";
-	
-	//v2.1.10
-	$login_text_017 = "Email Me My Security Question Response";
-	$login_text_018 = "";
-	$login_text_019 = "";
-	$login_text_020 = "";
-} 
+$login_text_000 = "You are already logged in.";
+$login_text_001 = "There is no email address in the system that matches the one you entered.";
+$login_text_002 = "Try again?";
+$login_text_003 = "Have you registered your account yet?";
+$login_text_004 = "Forgot your password?";
+$login_text_005 = "Reset it";
+$login_text_006 = "To reset your password, enter the email address you used when you registered.";
+$login_text_007 = "Verify";
+$login_text_008 = "Randomly generated.";
+$login_text_009 = "<strong>Unavailable.</strong> Your account was created by an administrator and your &quot;secret answer&quot; was randomly generated. Please contact a website administrator to recover or change your password.";
+$login_text_010 = "Or, use the email option below.";
+$login_text_011 = "Your security question is...";
+$login_text_012 = "If you didn't receive the email,";
+$login_text_013 = "An email will be sent to you with your verification question and answer. Be sure to check your SPAM folder.";
+$login_text_014 = "click here to resend it to";
+$login_text_015 = "If you can't remember the answer to your security question, contact a competition official or site administrator.";
+$login_text_016 = "Get it emailed to";
+
+//v2.1.10
+$login_text_017 = "Email Me My Security Question Answer";
+$login_text_018 = "Your user name (email address) is required.";
+$login_text_019 = "Your password is required.";
+$login_text_020 = "The token provided is invalid or has already been used. Please use the forgot password function again to generate a new password reset token.";
+$login_text_021 = "The token provided has expired. Please use the forgot password function again to generate a new password reset token.";
+$login_text_022 = "The email you entered is not associated with the provided token. Please try again.";
+$login_text_023 = "The passwords do not match. Please try again.";
+$login_text_024 = "A confirmation password is required.";
+$login_text_025 = "Forgot your password?";
+$login_text_026 = "Enter your account email address and new password below.";
+$login_text_027 = "Your password has been reset successfully. You may now log in with the new password.";
 
 // -------------------- Winners --------------------
 
@@ -1243,7 +1285,10 @@ $winners_text_000 = "No winners have been entered for this table. Please check b
 $winners_text_001 = "Winning entries have not been posted yet. Please check back later.";
 $winners_text_002 = "Your chosen award structure is to award places by table. Select the award places for the table as a whole below.";
 $winners_text_003 = "Your chosen award structure is to award places by category. Select the award places for each overall category below (there may be more than one at this table).";
-$winners_text_004 = "Your chosen award structure is to award places by sub-category. Select the award places for each sub-category below (there may be more than one at this table).";
+$winners_text_004 = "Your chosen award structure is to award places by subcategory. Select the award places for each subcategory below (there may be more than one at this table).";
+
+//v 2.1.10
+$winners_text_005 = "Best of Show winner(s) have not been posted yet. Please check back later.";
 
 
 // ----------------------------------------------------------------------------------
@@ -1288,19 +1333,56 @@ $output_text_030 = "";
 $maintenance_text_000 = "The site administrator has taken the site offline to undergo maintenance.";
 $maintenance_text_001 = "Please check back later.";
 
+// v2.1.10
 // PayPal Response
 $paypal_response_text_000 = "Your payment has been completed. The transaction details are provided here for your convience.";
-$paypal_response_text_001 = "Please note that you will receive an official receipt from PayPal at the email address listed below.";
+$paypal_response_text_001 = "Please note that you will receive an official commuication from PayPal at the email address listed below.";
 $paypal_response_text_002 = "Best of luck in the competition!";
 $paypal_response_text_003 = "Please do not reply to this email as it is automatically generated. The originating account is not active or monitored.";
-$paypal_response_text_004 = "";
-$paypal_response_text_005 = "";
-$paypal_response_text_006 = "";
-$paypal_response_text_007 = "";
+$paypal_response_text_004 = "PayPal has processed your transaction.";
+$paypal_response_text_005 = "The status of your PayPal payment is:";
+$paypal_response_text_006 = "Paypal response was &quot;invalid.&quot;. Please try to make your payment again.";
+$paypal_response_text_007 = "Please contact the competition organizer if you have any questions.";
+$paypal_response_text_008 = "Invalid PayPal Payment";
+$paypal_response_text_009 = "PayPal Payment Details";
+
+// v2.1.10
+// Password reset email text
+$pwd_email_reset_text_000 = "A request was made to verify the account at the";
+$pwd_email_reset_text_001 = "website using the ID Verfication email function. If you did not initiate this, please contact the competition's organizer.";
+$pwd_email_reset_text_002 = "The ID verification answer is case sensitive";
+$pwd_email_reset_text_003 = "A request was made to change your password at the";
+$pwd_email_reset_text_004 = "website. If you did not initiate this, don't worry. Your password cannot be reset without the link below.";
+$pwd_email_reset_text_005 = "To reset your password, click the link below or copy/paste it into your browser.";
+$pwd_email_reset_text_006 = "";
+$pwd_email_reset_text_007 = "";
+$pwd_email_reset_text_008 = "";
+$pwd_email_reset_text_009 = "";
+$pwd_email_reset_text_010 = "";
+
+// ----------------------------------------------------------------------------------
+// Various conditionals
+// ----------------------------------------------------------------------------------
+
+if (strpos($section, "step") === FALSE) $alert_text_032 = $alert_text_032; else $alert_text_032 = "";
+if (strpos($section, "step") === FALSE) $alert_text_033 = $alert_text_033; else $alert_text_033 = "";
+if (strpos($section, "step") === FALSE) $alert_text_036 = $alert_text_036; else $alert_text_036 = "";
+if (strpos($section, "step") === FALSE) $alert_text_039 = $alert_text_039; else $alert_text_039 = "";
+if ((strpos($section, "step") === FALSE) && ($_SESSION['prefsProEdition'] == 0)) $alert_text_043 = $alert_text_043; else $alert_text_043 = "";
+if ((strpos($section, "step") === FALSE) && ($_SESSION['prefsProEdition'] == 0)) $alert_text_047 = $alert_text_047; else $alert_text_047 = "";
+if (strpos($section, "step") === FALSE) $alert_text_050 = $alert_text_050; else $alert_text_050 = "";
+if (strpos($section, "step") === FALSE) $alert_text_053 = $alert_text_053; else $alert_text_053 = "";
+if ((strpos($section, "step") === FALSE) && ($_SESSION['prefsProEdition'] == 0)) $alert_text_060 = $alert_text_060; else $alert_text_060 = "";
+if (strpos($section, "step") === FALSE) $alert_text_068 = $alert_text_068; else $alert_text_068 = "";
+if (strpos($section, "step") === FALSE) $alert_text_070 = $alert_text_070; else $alert_text_070 = "";
+if (strpos($section, "step") === FALSE) $label_character_limit = $label_character_limit; else $label_character_limit = "";
+if (strpos($section, "step") === FALSE) $header_text_031 = $header_text_031; else $header_text_031 = "";
+if (strpos($section, "step") === FALSE) $beerxml_text_007 = $beerxml_text_007; else $beerxml_text_007 = "";
+
 
 // ----------------------------------------------------------------------------------
 // Admin Pages - Admin pages will be included in a future release
 // ----------------------------------------------------------------------------------
-// if ($section == "admin") include(LANG.'en_admin.lang.php');
+// if ($section == "admin") include (LANG.'en_admin.lang.php');
 
 ?>

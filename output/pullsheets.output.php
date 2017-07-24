@@ -1,9 +1,9 @@
 <?php
 
 require(DB.'admin_common.db.php');
-include(LIB.'output.lib.php');
-include(DB.'output_pullsheets.db.php');
-include(INCLUDES.'scrubber.inc.php');
+include (LIB.'output.lib.php');
+include (DB.'output_pullsheets.db.php');
+include (INCLUDES.'scrubber.inc.php');
 
 $queued = FALSE;
 $tables_none = FALSE;
@@ -50,7 +50,7 @@ if ($go == "judging_scores_bos") {
 		
 		if ($style_type_info[0] == "Y") { 
 		
-			include(DB.'output_pullsheets_bos.db.php');
+			include (DB.'output_pullsheets_bos.db.php');
 			
 			$table_info_header = "";
 	
@@ -95,7 +95,7 @@ if ($go == "judging_scores_bos") {
 				
 				do {
 					
-					include(DB.'output_pullsheets_bos_entries.db.php');
+					include (DB.'output_pullsheets_bos_entries.db.php');
 					
 					$style = $row_entries_1['brewCategorySort'].$row_entries_1['brewSubCategory'];
 					$style_special = $row_entries_1['brewCategorySort']."^".$row_entries_1['brewSubCategory']."^".$_SESSION['prefsStyleSet'];
@@ -124,6 +124,7 @@ if ($go == "judging_scores_bos") {
 						$special = explode("^",$special);
 						if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) {
 							if (($row_entries_1['brewInfo'] != "") && ($special[4] == "1")) $table_flight_tbody .= "<p><strong>Required Info: </strong>".str_replace("^","; ",$row_entries_1['brewInfo'])."</p>";
+							if ($row_entries_1['brewInfoOptional'] != "") $table_flight_tbody .= "<p><strong>Optional Info: </strong>".$row_entries_1['brewInfoOptional']."</p>";
 							if ($row_entries_1['brewComments'] != "") $table_flight_tbody .= "<p><strong>Specifics: </strong>".$row_entries_1['brewComments']."</p>";
 							if (style_convert($style,"5")) {
 								$table_flight_tbody .= "<p>";
@@ -135,9 +136,10 @@ if ($go == "judging_scores_bos") {
 						}
 						
 						else {
-							include(INCLUDES.'ba_constants.inc.php');
+							include (INCLUDES.'ba_constants.inc.php');
 							$value = $row_entries_1['id'];
 							if (in_array($value,$ba_special_ids)) $table_flight_tbody .= "<p><strong>Required Info: </strong>".str_replace("^","; ",$row_entries_1['brewInfo'])."</p>";
+							if ($row_entries_1['brewInfoOptional'] != "") $table_flight_tbody .= "<p><strong>Optional Info: </strong>".$row_entries_1['brewInfoOptional']."</p>";
 							if ($row_entries_1['brewComments'] != "") $table_flight_tbody .= "<p><strong>Specifics: </strong>".$row_entries_1['brewComments']."</p>";
 							if (in_array($value,$ba_mead_cider)) {
 								$table_flight_tbody .= "<p>";
@@ -197,7 +199,7 @@ else {
 			do {
 	
 				$entry_count = get_table_info(1,"count_total",$row_tables['id'],$dbTable,"default");
-				include(DB.'output_pullsheets_queued.db.php');
+				include (DB.'output_pullsheets_queued.db.php');
 				$round_count[] = $row_table_round['count'];
 	
 				$table_flight = "";
@@ -218,10 +220,10 @@ else {
 	
 					if ((!empty($row_tables['tableLocation'])) && ($filter != "mini_bos")) {
 	
-						$table_info_location .= "<h3>";
+						$table_info_location .= "<h2>";
 						$table_info_location .= table_location($row_tables['id'],$_SESSION['prefsDateFormat'],$_SESSION['prefsTimeZone'],$_SESSION['prefsTimeFormat'],"default");
 						if ($round != "default") $table_info_location .= sprintf("<br>%s %s",$label_round,$round);
-						$table_info_location .= "</h3>";
+						$table_info_location .= "</h2>";
 						$table_info_location .= "<p class=\"lead\">";
 						$table_info_location .= sprintf("%s: %s",$label_entries,$entry_count);
 						$table_info_location .= "</p>";
@@ -271,7 +273,7 @@ else {
 						
 						foreach (array_unique($a) as $value) {
 							
-							include(DB.'output_pullsheets_entries.db.php');
+							include (DB.'output_pullsheets_entries.db.php');
 							$style = $row_entries['brewCategorySort'].$row_entries['brewSubCategory'];
 							$style_special = $row_entries['brewCategorySort']."^".$row_entries['brewSubCategory']."^".$_SESSION['prefsStyleSet'];					
 							
@@ -300,6 +302,7 @@ else {
 									$special = explode("^",$special);
 									if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) {
 										if (($row_entries['brewInfo'] != "") && ($special[4] == "1")) $table_flight_tbody .= "<p><strong>Required Info: </strong>".str_replace("^","; ",$row_entries['brewInfo'])."</p>";
+										if ($row_entries['brewInfoOptional'] != "") $table_flight_tbody .= "<p><strong>Optional Info: </strong>".$row_entries['brewInfoOptional']."</p>";
 										if ($row_entries['brewComments'] != "") $table_flight_tbody .= "<p><strong>Specifics: </strong>".$row_entries['brewComments']."</p>";
 										if (style_convert($style,"5")) {
 											$table_flight_tbody .= "<p>";
@@ -310,8 +313,9 @@ else {
 										}
 									}
 									else {
-										include(INCLUDES.'ba_constants.inc.php');
+										include (INCLUDES.'ba_constants.inc.php');
 										if (in_array($value,$ba_special_ids)) $table_flight_tbody .= "<p><strong>Required Info: </strong>".str_replace("^","; ",$row_entries['brewInfo'])."</p>";
+										if ($row_entries['brewInfoOptional'] != "") $table_flight_tbody .= "<p><strong>Optional Info: </strong>".$row_entries['brewInfoOptional']."</p>";
 										if ($row_entries['brewComments'] != "") $table_flight_tbody .= "<p><strong>Specifics: </strong>".$row_entries['brewComments']."</p>";
 										if (in_array($value,$ba_mead_cider)) {
 											$table_flight_tbody .= "<p>";
@@ -364,7 +368,7 @@ else {
 			$pullsheet_output = "";
 			
 			$entry_count = get_table_info(1,"count_total",$row_tables['id'],$dbTable,"default");
-			include(DB.'output_pullsheets_queued.db.php');
+			include (DB.'output_pullsheets_queued.db.php');
 			$round_count[] = $row_table_round['count'];
 	
 			$table_flight = "";
@@ -385,10 +389,10 @@ else {
 	
 				if ((!empty($row_tables['tableLocation'])) && ($filter != "mini_bos")) {
 	
-					$table_info_location .= "<h3>";
+					$table_info_location .= "<h2>";
 					$table_info_location .= table_location($row_tables['id'],$_SESSION['prefsDateFormat'],$_SESSION['prefsTimeZone'],$_SESSION['prefsTimeFormat'],"default");
 					if ($round != "default") $table_info_location .= sprintf("<br>%s %s",$label_round,$round);
-					$table_info_location .= "</h3>";
+					$table_info_location .= "</h2>";
 					$table_info_location .= "<p class=\"lead\">";
 					$table_info_location .= sprintf("%s: %s",$label_entries,$entry_count);
 					$table_info_location .= "</p>";
@@ -438,7 +442,7 @@ else {
 					
 					foreach (array_unique($a) as $value) {
 						
-						include(DB.'output_pullsheets_entries.db.php');
+						include (DB.'output_pullsheets_entries.db.php');
 						$style = $row_entries['brewCategorySort'].$row_entries['brewSubCategory'];
 						$style_special = $row_entries['brewCategorySort']."^".$row_entries['brewSubCategory']."^".$_SESSION['prefsStyleSet'];					
 						
@@ -467,6 +471,7 @@ else {
 								$special = explode("^",$special);
 								if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) {
 									if (($row_entries['brewInfo'] != "") && ($special[4] == "1")) $table_flight_tbody .= "<p><strong>Required Info: </strong>".str_replace("^","; ",$row_entries['brewInfo'])."</p>";
+									if ($row_entries['brewInfoOptional'] != "") $table_flight_tbody .= "<p><strong>Optional Info: </strong>".$row_entries['brewInfoOptional']."</p>";
 									if ($row_entries['brewComments'] != "") $table_flight_tbody .= "<p><strong>Specifics: </strong>".$row_entries['brewComments']."</p>";
 									if (style_convert($style,"5")) {
 										$table_flight_tbody .= "<p>";
@@ -477,8 +482,9 @@ else {
 									}
 								}
 								else {
-									include(INCLUDES.'ba_constants.inc.php');
+									include (INCLUDES.'ba_constants.inc.php');
 									if (in_array($value,$ba_special_ids)) $table_flight_tbody .= "<p><strong>Required Info: </strong>".str_replace("^","; ",$row_entries['brewInfo'])."</p>";
+									if ($row_entries['brewInfoOptional'] != "") $table_flight_tbody .= "<p><strong>Optional Info: </strong>".$row_entries['brewInfoOptional']."</p>";
 									if ($row_entries['brewComments'] != "") $table_flight_tbody .= "<p><strong>Specifics: </strong>".$row_entries['brewComments']."</p>";
 									if (in_array($value,$ba_mead_cider)) {
 										$table_flight_tbody .= "<p>";
@@ -553,13 +559,13 @@ else {
 	
 				if (!empty($row_tables['tableLocation'])) {
 	
-					$table_info_location .= "<p class=\"lead\">";
+					$table_info_location .= "<h2>";
 					$table_info_location .= table_location($row_tables['id'],$_SESSION['prefsDateFormat'],$_SESSION['prefsTimeZone'],$_SESSION['prefsTimeFormat'],"default");
 					if ($round != "default") $table_info_location .= sprintf("<br>%s %s",$label_round,$round);
-					$table_info_location .= "</p>";
-					$table_info_location .= "<p class=\"lead\"><small>";
+					$table_info_location .= "</h2>";
+					$table_info_location .= "<p class=\"lead\">";
 					$table_info_location .= sprintf("%s: %s<br>%s: %s",$label_entries,get_table_info(1,"count_total",$row_tables['id'],$dbTable,"default"),$label_flights,$flights);
-					$table_info_location .= "</small></p>";
+					$table_info_location .= "</p>";
 					$table_info_location .= "<p>".$label_please_note."</p>";
 					$table_info_location .= "<ul>";
 					$table_info_location .= "<li>".$output_text_017."</li>";
@@ -581,7 +587,7 @@ else {
 					$round_check = mysqli_query($connection,$query_round_check) or die (mysqli_error($connection));
 					$row_round_check = mysqli_fetch_assoc($round_check);
 					
-					$table_flight .= "<h4>".sprintf("%s %s: %s - %s %s, %s %s",$label_table,$row_tables['tableNumber'],$row_tables['tableName'],$label_flight,$i,$label_round,$row_round_check['flightRound'])."</h4>";
+					$table_flight .= "<h3>".sprintf("%s %s: %s - %s %s, %s %s",$label_table,$row_tables['tableNumber'],$row_tables['tableName'],$label_flight,$i,$label_round,$row_round_check['flightRound'])."</h3>";
 					
 					$table_flight_datatables .= "<script>";
 					$table_flight_datatables .= "$(document).ready(function() {";
@@ -599,7 +605,7 @@ else {
 					$table_flight_datatables .= "{ \"asSorting\": [  ] },";
 					$table_flight_datatables .= "{ \"asSorting\": [  ] },";
 					$table_flight_datatables .= "{ \"asSorting\": [  ] },";
-					$table_flight_datatables .= "{ \"asSorting\": [  ] },";
+					if ($filter != "mini_bos") $table_flight_datatables .= "{ \"asSorting\": [  ] },";
 					$table_flight_datatables .= "{ \"asSorting\": [  ] }";
 					$table_flight_datatables .= "]";
 					$table_flight_datatables .= "} );";
@@ -618,7 +624,7 @@ else {
 					//print_r($a);
 					foreach (array_unique($a) as $value) {
 		
-						include(DB.'output_pullsheets_entries.db.php');
+						include (DB.'output_pullsheets_entries.db.php');
 						$style = $row_entries['brewCategorySort'].$row_entries['brewSubCategory'];
 						$style_special = $row_entries['brewCategorySort']."^".$row_entries['brewSubCategory']."^".$_SESSION['prefsStyleSet'];
 						
@@ -649,6 +655,7 @@ else {
 								$special = explode("^",$special);
 								if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) {
 									if (($row_entries['brewInfo'] != "") && ($special[4] == "1")) $table_flight_tbody .= "<p><strong>Required Info: </strong>".str_replace("^","; ",$row_entries['brewInfo'])."</p>";
+									if ($row_entries['brewInfoOptional'] != "") $table_flight_tbody .= "<p><strong>Optional Info: </strong>".$row_entries['brewInfoOptional']."</p>";
 									if ($row_entries['brewComments'] != "") $table_flight_tbody .= "<p><strong>Specifics: </strong>".$row_entries['brewComments']."</p>";
 									if (style_convert($style,"5")) {
 										$table_flight_tbody .= "<p>";
@@ -659,7 +666,7 @@ else {
 									}
 								}
 								else {
-									include(INCLUDES.'ba_constants.inc.php');
+									include (INCLUDES.'ba_constants.inc.php');
 									if (in_array($value,$ba_special_ids)) $table_flight_tbody .= "<p><strong>Required Info: </strong>".str_replace("^","; ",$row_entries['brewInfo'])."</p>";
 									if ($row_entries['brewComments'] != "") $table_flight_tbody .= "<p><strong>Specifics: </strong>".$row_entries['brewComments']."</p>";
 									if (in_array($value,$ba_mead_cider)) {
@@ -698,11 +705,11 @@ else {
 					$table_flight .= "</tbody>";
 					$table_flight .= "</table>";
 					$pullsheet_output .= $table_flight;
-					if ($flights > 0) $pullsheet_output .= "<div style=\"page-break-after:always;\"></div>";
+					if (($flights > 0) && ($filter != "mini_bos")) $pullsheet_output .= "<div style=\"page-break-after:always;\"></div>";
 					
 				} // end for($i=1; $i<$flights+1; $i++)
 				
-				if ($flights == 0) $pullsheet_output .= "<div style=\"page-break-after:always;\"></div>";
+				if (($flights == 0) || ($filter == "mini_bos")) $pullsheet_output .= "<div style=\"page-break-after:always;\"></div>";
 	
 			} while ($row_tables = mysqli_fetch_assoc($tables));
 	
@@ -729,13 +736,13 @@ else {
 	
 			if (!empty($row_tables['tableLocation'])) {
 	
-				$table_info_location .= "<p class=\"lead\">";
+				$table_info_location .= "<h2>";
 				$table_info_location .= table_location($row_tables['id'],$_SESSION['prefsDateFormat'],$_SESSION['prefsTimeZone'],$_SESSION['prefsTimeFormat'],"default");
 				if ($round != "default") $table_info_location .= sprintf("<br>%s %s",$label_round,$round);
-				$table_info_location .= "</p>";
-				$table_info_location .= "<p class=\"lead\"><small>";
+				$table_info_location .= "</h2>";
+				$table_info_location .= "<p class=\"lead\">";
 				$table_info_location .= sprintf("%s: %s<br>%s: %s",$label_entries,get_table_info(1,"count_total",$row_tables['id'],$dbTable,"default"),$label_flights,$flights);
-				$table_info_location .= "</small></p>";
+				$table_info_location .= "</p>";
 				$table_info_location .= "<p>".$label_please_note."</p>";
 				$table_info_location .= "<ul>";
 				$table_info_location .= "<li>".$output_text_017."</li>";
@@ -757,7 +764,7 @@ else {
 				$round_check = mysqli_query($connection,$query_round_check) or die (mysqli_error($connection));
 				$row_round_check = mysqli_fetch_assoc($round_check);
 				
-				$table_flight .= "<h4>".sprintf("%s %s: %s - %s %s, %s %s",$label_table,$row_tables['tableNumber'],$row_tables['tableName'],$label_flight,$i,$label_round,$row_round_check['flightRound'])."</h4>";
+				$table_flight .= "<h3>".sprintf("%s %s: %s - %s %s, %s %s",$label_table,$row_tables['tableNumber'],$row_tables['tableName'],$label_flight,$i,$label_round,$row_round_check['flightRound'])."</h3>";
 				
 				$table_flight_datatables .= "<script>";
 				$table_flight_datatables .= "$(document).ready(function() {";
@@ -794,7 +801,7 @@ else {
 				//print_r($a);
 				foreach (array_unique($a) as $value) {
 	
-					include(DB.'output_pullsheets_entries.db.php');
+					include (DB.'output_pullsheets_entries.db.php');
 					$style = $row_entries['brewCategorySort'].$row_entries['brewSubCategory'];
 					$style_special = $row_entries['brewCategorySort']."^".$row_entries['brewSubCategory']."^".$_SESSION['prefsStyleSet'];
 					
@@ -825,6 +832,7 @@ else {
 							$special = explode("^",$special);
 							if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) {
 								if (($row_entries['brewInfo'] != "") && ($special[4] == "1")) $table_flight_tbody .= "<p><strong>Required Info: </strong>".str_replace("^","; ",$row_entries['brewInfo'])."</p>";
+								if ($row_entries['brewInfoOptional'] != "") $table_flight_tbody .= "<p><strong>Optional Info: </strong>".$row_entries['brewInfoOptional']."</p>";
 								if ($row_entries['brewComments'] != "") $table_flight_tbody .= "<p><strong>Specifics: </strong>".$row_entries['brewComments']."</p>";
 								if (style_convert($style,"5")) {
 									$table_flight_tbody .= "<p>";
@@ -835,8 +843,9 @@ else {
 								}
 							}
 							else {
-								include(INCLUDES.'ba_constants.inc.php');
+								include (INCLUDES.'ba_constants.inc.php');
 								if (in_array($value,$ba_special_ids)) $table_flight_tbody .= "<p><strong>Required Info: </strong>".str_replace("^","; ",$row_entries['brewInfo'])."</p>";
+								if ($row_entries['brewInfoOptional'] != "") $table_flight_tbody .= "<p><strong>Optional Info: </strong>".$row_entries['brewInfoOptional']."</p>";
 								if ($row_entries['brewComments'] != "") $table_flight_tbody .= "<p><strong>Specifics: </strong>".$row_entries['brewComments']."</p>";
 								if (in_array($value,$ba_mead_cider)) {
 									$table_flight_tbody .= "<p>";

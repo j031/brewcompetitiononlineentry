@@ -6,12 +6,37 @@
  */
 
 ?>
-<div class="bcoem-admin-dashboard-accordion">
-    <p class="lead">Hello, <?php echo $_SESSION['brewerFirstName']; ?>. <span class="small">Click or tap the headings or icons below to view the options available in each category.</span></p>
+<p class="lead">Hello, <?php echo $_SESSION['brewerFirstName']; ?>. <span class="small">Click or tap the headings or icons below to view the options available in each category.</span></p>
+<?php if ((judging_date_return() == 0) && ($_SESSION['userLevel'] == 0))  { ?>
+<div class="row">
+	<?php if ($_SESSION['prefsWinnerDelay'] > 0) { ?>
+	<div class="col col-lg-6 col-md-12 col-sm-12 col-xs-12">
+		<div class="bcoem-admin-element">
+			<div class="row">
+				<div class="col col-md-12">
+					<a class="btn btn-primary btn-block" href="<?php echo $base_url; ?>includes/process.inc.php?action=publish" data-confirm="Are you sure? This will immediately publish any and all results that have been entered into the database. Results will be displayed on the home page.">Publish Results Now&nbsp;&nbsp;<span class="fa fa-bullhorn"></span></a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<?php } ?>
+	<div class="col col-lg-6 col-md-12 col-sm-12 col-xs-12">
+		<div class="bcoem-admin-element">
+			<div class="row">
+				<div class="col col-md-12">
+					<a class="btn btn-info btn-block" href="http://brewcompetition.com/reset-comp" target="_blank">Reset Competition Information&nbsp;&nbsp;<span class="fa fa-info-circle"></span></a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<?php } ?>
+ <div class="bcoem-admin-dashboard-accordion">
     <div class="row">
         <div class="col col-lg-6 col-md-12 col-sm-12 col-xs-12">
             <div class="panel-group" id="accordion">
 				<?php if ($_SESSION['userLevel'] == "0") { ?>
+               
                 <!-- Preparing Panel -->
                 <div class="panel panel-default">
                     <div class="panel-heading">
@@ -124,12 +149,14 @@
                         </div>
                     </div>
                 </div><!-- ./ Preparing Panel -->
+                
 				<?php } ?>
+               
                 <!-- Entry and Data Gathering Panel -->
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h4 class="panel-title">
-                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseEntry">Entries and Participants<span class="fa fa-beer pull-right"></span></a>
+                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseEntry">Entries<?php if ($_SESSION['prefsPaypalIPN'] == 1) echo ", Payments,";?> and Participants<span class="fa fa-beer pull-right"></span></a>
                         </h4>
                     </div>
                     <div id="collapseEntry" class="panel-collapse collapse">
@@ -145,6 +172,22 @@
                                     </ul>
                                 </div>
                             </div><!-- ./row -->
+                            
+                            <?php if ($_SESSION['prefsPaypalIPN'] == 1) { ?>
+                            
+                            <div class="row">
+                                <div class="col col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                                    <strong>Payments</strong>
+                                </div>
+                                <div class="col col-lg-8 col-md-8 col-sm-8 col-xs-8">
+                                    <ul class="list-inline">
+                                        <li><a href="<?php echo $base_url; ?>index.php?section=admin&amp;go=payments">Manage</a></li>
+                                    </ul>
+                                </div>
+                            </div><!-- ./row -->
+                            
+                            <?php } ?>
+                            
                             <div class="row">
                                 <div class="col col-lg-4 col-md-4 col-sm-4 col-xs-4">
                                     <strong>Participants</strong>
@@ -203,9 +246,9 @@
                                 </div>
                                 <div class="col col-lg-8 col-md-8 col-sm-8 col-xs-8">
                                     <ul class="list-inline">
-                                        <li><a data-confirm="Are you sure you want to regenerate judging numbers for all entries? This will over-write all judging numbers, including those that have been assigned via the barcode or QR Code scanning function." href="<?php echo $base_url; ?>includes/process.inc.php?section=admin&amp;go=default&amp;action=generate_judging_numbers&amp;sort=default">Judging Numbers (Random)</a></li>
-                                        <li><a data-confirm="Are you sure you want to regenerate judging numbers for all entries? This will over-write all judging numbers, including those that have been assigned via the barcode or QR Code scanning function." href="<?php echo $base_url; ?>includes/process.inc.php?section=admin&amp;go=default&amp;action=generate_judging_numbers&amp;sort=legacy">Judging Numbers (With Style Number Prefix)</a></li>
-                                        <li><a data-confirm="Are you sure you want to regenerate judging numbers for all entries? This will over-write all judging numbers, including those that have been assigned via the barcode or QR Code scanning function." href="<?php echo $base_url; ?>includes/process.inc.php?section=admin&amp;go=<?php echo $go; ?>&amp;action=generate_judging_numbers&amp;sort=identical">Judging Numbers (Same as Entry Numbers)</a></li>
+                                        <li><a data-confirm="Are you sure you want to regenerate judging numbers for all entries? This will over-write all judging numbers, including those that have been assigned via the barcode or QR Code scanning function. The process may take a while depending upon the number of entires in your database." href="<?php echo $base_url; ?>includes/process.inc.php?section=admin&amp;go=default&amp;action=generate_judging_numbers&amp;sort=default">Judging Numbers (Random)</a></li>
+                                        <li><a data-confirm="Are you sure you want to regenerate judging numbers for all entries? This will over-write all judging numbers, including those that have been assigned via the barcode or QR Code scanning function. The process may take a while depending upon the number of entires in your database." href="<?php echo $base_url; ?>includes/process.inc.php?section=admin&amp;go=default&amp;action=generate_judging_numbers&amp;sort=legacy">Judging Numbers (With Style Number Prefix)</a></li>
+                                        <li><a data-confirm="Are you sure you want to regenerate judging numbers for all entries? This will over-write all judging numbers, including those that have been assigned via the barcode or QR Code scanning function. The process may take a while depending upon the number of entires in your database." href="<?php echo $base_url; ?>includes/process.inc.php?section=admin&amp;go=<?php echo $go; ?>&amp;action=generate_judging_numbers&amp;sort=identical">Judging Numbers (Same as Entry Numbers)</a></li>
                                     </ul>
                                 </div>
                             </div><!-- ./row -->
@@ -262,7 +305,7 @@
                                         <li><a data-toggle="tooltip" title="6 judging numbers per label" href="<?php echo $base_url; ?>output/labels.output.php?section=admin&amp;go=entries&amp;action=bottle-judging&amp;filter=default&amp;psort=5160">Judging Numbers</a></li>
                                     </ul>
 									<ul class="list-unstyled">
-										<li>With Required Info - All Categories (Entry Numbers)
+										<li>With Required Info - All Styles (Entry Numbers)
 										    <div class="dropdown bcoem-admin-dashboard-select">
 												<button class="btn btn-default dropdown-toggle" type="button" id="sortingMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Number of Labels per Entry <span class="caret"></span>
 												</button>
@@ -273,7 +316,7 @@
 												</ul>
 											</div>
 										</li>
-                                        <li>With Required Info - Only Categories Where Required (Entry Numbers)
+                                        <li>With Required Info - Only Styles Where Required (Entry Numbers)
 										    <div class="dropdown bcoem-admin-dashboard-select">
 												<button class="btn btn-default dropdown-toggle" type="button" id="sortingMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Number of Labels per Entry <span class="caret"></span>
 												</button>
@@ -287,7 +330,7 @@
 										
 									</ul>
                                     <ul class="list-unstyled">
-										<li>With Required Info - All Categories (Judging Numbers)
+										<li>With Required Info - All Styles (Judging Numbers)
 										    <div class="dropdown bcoem-admin-dashboard-select">
 												<button class="btn btn-default dropdown-toggle" type="button" id="sortingMenu3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Number of Labels per Entry <span class="caret"></span>
 												</button>
@@ -298,7 +341,7 @@
 												</ul>
 											</div>
 										</li>
-										<li>With Required Info - Only Categories Where Required (Judging Numbers)
+										<li>With Required Info - Only Styles Where Required (Judging Numbers)
 										    <div class="dropdown bcoem-admin-dashboard-select">
 												<button class="btn btn-default dropdown-toggle" type="button" id="sortingMenu4" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Number of Labels per Entry <span class="caret"></span>
 												</button>
@@ -323,7 +366,7 @@
                                         <li><a data-toggle="tooltip" title="6 judging numbers per label" href="<?php echo $base_url; ?>output/labels.output.php?section=admin&amp;go=entries&amp;action=bottle-judging&amp;filter=default&amp;psort=3422">Judging Numbers</a></li>
                                     </ul>
                                     <ul class="list-unstyled">
-										<li>With Required Info - All Categories (Entry Numbers)
+										<li>With Required Info - All Styles (Entry Numbers)
 										    <div class="dropdown bcoem-admin-dashboard-select">
 												<button class="btn btn-default dropdown-toggle" type="button" id="sortingMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Number of Labels per Entry <span class="caret"></span>
 												</button>
@@ -334,7 +377,7 @@
 												</ul>
 											</div>
 										</li>
-                                        <li>With Required Info - Only Categories Where Required (Entry Numbers)
+                                        <li>With Required Info - Only Styles Where Required (Entry Numbers)
 										    <div class="dropdown bcoem-admin-dashboard-select">
 												<button class="btn btn-default dropdown-toggle" type="button" id="sortingMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Number of Labels per Entry <span class="caret"></span>
 												</button>
@@ -348,7 +391,7 @@
 										
 									</ul>
                                     <ul class="list-unstyled">
-										<li>With Required Info - All Categories (Judging Numbers)
+										<li>With Required Info - All Styles (Judging Numbers)
 										    <div class="dropdown bcoem-admin-dashboard-select">
 												<button class="btn btn-default dropdown-toggle" type="button" id="sortingMenu3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Number of Labels per Entry <span class="caret"></span>
 												</button>
@@ -359,7 +402,7 @@
 												</ul>
 											</div>
 										</li>
-										<li>With Required Info - Only Categories Where Required (Judging Numbers)
+										<li>With Required Info - Only Styles Where Required (Judging Numbers)
 										    <div class="dropdown bcoem-admin-dashboard-select">
 												<button class="btn btn-default dropdown-toggle" type="button" id="sortingMenu4" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Number of Labels per Entry <span class="caret"></span>
 												</button>
@@ -1120,11 +1163,14 @@
                             <div class="col col-lg-8 col-md-8 col-sm-8 col-xs-8">
                                 <ul class="list-inline">
                                     <li><a href="<?php echo $base_url; ?>includes/data_cleanup.inc.php?action=purge&amp;go=entries" data-confirm="Are you sure you want to delete all entries and associated data including scores and bos scores? This cannot be undone.">Entries</a></li>
+                                    <?php if (check_setup($prefix."payments",$database)) { ?>
+                                    <li><a href="<?php echo $base_url; ?>includes/data_cleanup.inc.php?action=purge&amp;go=payments" data-confirm="Are you sure you want to delete all payment records? This cannot be undone.">Payments</a></li>
+                                    <?php } ?>
                                     <li><a href="<?php echo $base_url; ?>includes/data_cleanup.inc.php?action=purge&amp;go=participants" data-confirm="Are you sure you want to delete all non-admin participants and associated data? This cannot be undone.">Participants</a></li>
                                     <li><a href="<?php echo $base_url; ?>includes/data_cleanup.inc.php?action=purge&amp;go=tables" data-confirm="Are you sure you want to delete all judging tables and associated data including judging/stewarding table assignments? This cannot be undone.">Judging Tables</a></li>
                                     <li><a href="<?php echo $base_url; ?>includes/data_cleanup.inc.php?action=purge&amp;go=scores" data-confirm="Are you sure you want to delete all scoring data from the database including best of show? This cannot be undone.">Scores</a></li>
                                     <li><a href="<?php echo $base_url; ?>includes/data_cleanup.inc.php?action=purge&amp;go=custom" data-confirm="Are you sure you want to delete all custom categories and associated data? This cannot be undone.">Custom Categories</a></li>
-                                    <li><a href="<?php echo $base_url; ?>includes/data_cleanup.inc.php?action=purge&amp;go=availability" data-confirm="Are you sure you want to reset all judge and steward availabilty to &ldquo;No&rdquo; for all Judging Locations? This is useful for sites that are carrying over user data to another competition instance and cannot be undone.">Judge/Steward Availability</a></li>
+                                    <li><a href="<?php echo $base_url; ?>includes/data_cleanup.inc.php?action=purge&amp;go=availability" data-confirm="Are you sure you want to reset all entrant availability? All current judge, steward, and staff assignments will be cleared, judge/steward availability will be set to &ldquo;No,&rdquo; location preferences will be set to to &ldquo;No,&rdquo; and entrant staff interest will be set to &ldquo;No&rdquo; for all entrants. This is useful for sites that are carrying over user data to another competition instance, however, it is critical that all entrants be notified to update their judge, steward, and staff availability. This cannot be undone.">Entrant Availability</a></li>
                                 </ul>
                                 <ul class="list-inline">
                                     <li><a href="<?php echo $base_url; ?>includes/data_cleanup.inc.php?action=purge&amp;go=purge-all" data-confirm="Are you sure you want to delete entry, participant, judging table, score, and custom category data? This cannot be undone.">All of the Above</a> <span class="fa fa-hand-o-up small"></span></li>

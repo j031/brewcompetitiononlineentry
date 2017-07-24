@@ -82,7 +82,6 @@ $(document).ready(function(){
 });
 </script>
 
-
 <?php 
 $warning1 = "";
 $warning2 = "";
@@ -108,11 +107,10 @@ if (($registration_open == 2) && ($judge_window_open == 2) && (!$logged_in) || (
 
 else {
 
-	include(DB.'judging_locations.db.php');
-	include(DB.'stewarding.db.php'); 
-	include(DB.'styles.db.php'); 
-	include(DB.'brewer.db.php');
-	require_once(INCLUDES.'recaptchalib.inc.php');
+	include (DB.'judging_locations.db.php');
+	include (DB.'stewarding.db.php'); 
+	include (DB.'styles.db.php'); 
+	include (DB.'brewer.db.php');
 	if (NHC) $totalRows_log = $totalRows_entry_count;
 	else $totalRows_log = $totalRows_log;
 	if ($go != "default") {
@@ -127,7 +125,7 @@ else {
 	$random_country = array_rand($countries);
 	$random_country = $countries[$random_country];
 	
-	include(DB.'dropoff.db.php');
+	include (DB.'dropoff.db.php');
 	
 	if ($totalRows_dropoff > 0) {
 		$dropoff_select = "";
@@ -260,7 +258,6 @@ echo $page_info1;
 <input type="hidden" name="relocate" value="<?php echo relocate($relocate,"default",$msg,$id); ?>">
 </form>
 <?php } else { ?>
-
 <!-- Begin the Form -->
 <form data-toggle="validator" role="form" class="form-horizontal" action="<?php echo $base_url; ?>includes/process.inc.php?action=add&amp;dbTable=<?php echo $users_db_table; ?>&amp;section=register&amp;go=<?php echo $go; if ($section == "admin") echo "&amp;filter=admin"; echo "&amp;view=".$view; ?>" method="POST" name="form1" id="form1">
 
@@ -306,8 +303,6 @@ echo $page_info1;
         <input type="hidden" name="brewerPhone1" value="1234567890">
     <?php } // end if ($view == "quick")?>
 <?php } // end if ($section == "admin") ?>
-
-
 <?php if (($_SESSION['prefsProEdition'] == 1) && ($go == "entrant")) { ?>
     <div class="form-group"><!-- Form Group REQUIRED Text Input -->
         <label for="brewerBreweryName" class="col-lg-3 col-md-3 col-sm-4 col-xs-12 control-label"><?php echo $label_organization." ".$label_name; ?></label>
@@ -351,7 +346,6 @@ echo $page_info1;
 	</div><!-- ./Form Group -->
     
     <?php if ($view == "default") { // Show if not using quick add judge/steward feature ?>
-	<!-- Password -->
     <div class="form-group"><!-- Form Group REQUIRED Text Input -->
 		<label for="" class="col-lg-3 col-md-3 col-sm-4 col-xs-12 control-label"><?php echo $label_re_enter; if (($_SESSION['prefsProEdition'] == 1) && ($go == "entrant")) echo " ".$label_contact." "; echo " ".$label_email; ?></label>
 		<div class="col-lg-9 col-md-9 col-sm-8 col-xs-12">
@@ -364,18 +358,52 @@ echo $page_info1;
             <div class="help-block with-errors"></div>
 		</div>
 	</div><!-- ./Form Group -->
+	<script type="text/javascript">
+		$(document).ready(function () {
+			"use strict";
+			var options = {};
+			options.ui = {
+				container: "#pwd-container",
+				showErrors: true,
+				useVerdictCssClass: true,
+				showVerdictsInsideProgressBar: true,
+				viewports: {
+					progress: ".pwd-strength-viewport-progress"
+				},
+				progressBarExtraCssClasses: "progress-bar-striped active",
+				progressBarEmptyPercentage: 2,
+				progressBarMinPercentage: 6
+			};
+			options.common = {
+				zxcvbn: true,
+				minChar: 8,
+				onKeyUp: function (evt, data) {
+					$("#length-help-text").text("<?php echo $label_length; ?>: " + $(evt.target).val().length + " - <?php echo $label_score; ?>: " + data.score.toFixed(2));
+				},
+			};
+			$('#password1').pwstrength(options);
+		});
+	</script>
+	<!-- Password -->
 	<div class="form-group"><!-- Form Group REQUIRED Text Input -->
 		<label for="" class="col-lg-3 col-md-3 col-sm-4 col-xs-12 control-label"><?php echo $label_password; ?></label>
 		<div class="col-lg-9 col-md-9 col-sm-8 col-xs-12">
 			<div class="input-group has-warning">
 				<span class="input-group-addon" id="password-addon1"><span class="fa fa-key"></span></span>
 				<!-- Input Here -->
-				<input class="form-control" name="password" id="password" type="password" placeholder="Password" value="<?php if ($msg > 0) echo $_COOKIE['password']; ?>" data-error="<?php echo $register_text_022; ?>" required>
+				<input class="form-control" name="password" id="password1" type="password" placeholder="<?php echo $label_password; ?>" value="<?php if ($msg > 0) echo $_COOKIE['password']; ?>" data-error="<?php echo $register_text_022; ?>" required>
 				<span class="input-group-addon" id="password-addon2"><span class="fa fa-star"></span></span>
 			</div>
             <div class="help-block with-errors"></div>
 		</div>
 	</div><!-- ./Form Group -->
+	<div class="form-group" id="pwd-container">
+		<label class="col-lg-3 col-md-3 col-sm-4 col-xs-12 control-label"><?php echo $label_password_strength; ?></label>
+		<div class="col-lg-9 col-md-9 col-sm-8 col-xs-12">
+			<div class="pwd-strength-viewport-progress"></div>
+			<div id="length-help-text" class="small"></div>
+		</div>
+	</div>
 	<?php } // end if ($view == "default") ?>
     
     <?php if ($section != "admin") { // Show only when NOT being added by an administrator ?>
@@ -588,7 +616,7 @@ echo $page_info1;
 		<label for="" class="col-lg-3 col-md-3 col-sm-4 col-xs-12 control-label"><?php if (($_SESSION['prefsProEdition'] == 1) && ($go == "entrant")) echo $label_organization." "; echo $label_country; ?></label>
 		<div class="col-lg-9 col-md-9 col-sm-8 col-xs-12 has-warning">
 		<!-- Input Here -->
-		<select class="selectpicker" name="brewerCountry" id="brewerCountry" data-live-search="true" data-size="10" data-width="auto">
+		<select class="selectpicker" name="brewerCountry" id="brewerCountry" data-live-search="true" data-size="10" data-width="fit">
     		<?php echo $country_select; ?>
     	</select>
 		</div>
@@ -623,7 +651,7 @@ echo $page_info1;
 		<label for="" class="col-lg-3 col-md-3 col-sm-4 col-xs-12 control-label"><?php echo $label_drop_off; ?></label>
 		<div class="col-lg-9 col-md-9 col-sm-8 col-xs-12 has-warning">
 			<!-- Input Here -->
-			<select class="selectpicker" name="brewerDropOff" id="brewerDropOff" data-size="10" data-width="auto">
+			<select class="selectpicker" name="brewerDropOff" id="brewerDropOff" data-size="10" data-width="fit">
 				<option value="0"><?php echo $brewer_text_005; ?></option> 
 				<option disabled="disabled">-------------</option>
 				<?php echo $dropoff_select; ?>
@@ -639,7 +667,7 @@ echo $page_info1;
         <label for="brewerClubs" class="col-lg-3 col-md-3 col-sm-4 col-xs-12 control-label"><?php echo $label_club; ?></label>
         <div class="col-lg-9 col-md-6 col-sm-8 col-xs-12">
         <!-- Input Here -->
-        <select class="selectpicker" name="brewerClubs" id="brewerClubs" data-live-search="true" data-size="10" data-width="auto" data-show-tick="true" data-header="<?php echo $label_select_club; ?>" title="<?php echo $label_select_club; ?>">
+        <select class="selectpicker" name="brewerClubs" id="brewerClubs" data-live-search="true" data-size="10" data-width="fit" data-show-tick="true" data-header="<?php echo $label_select_club; ?>" title="<?php echo $label_select_club; ?>">
         	<option value="">None</option>
             <option value="Other">Other</option>
             <option data-divider="true"></option>
@@ -812,8 +840,7 @@ echo $page_info1;
 		<div class="col-lg-9 col-md-9 col-sm-8 col-xs-12">
 			<div class="input-group">
 				<!-- Input Here -->
-                <!-- <div class="g-recaptcha" data-sitekey="6LdUsBATAAAAAEJYbnqmygjGK-S6CHCoGcLALg5W"></div> -->
-				<?php echo recaptcha_get_html($publickey, null, true); ?>
+                <div class="g-recaptcha" data-sitekey="<?php echo $publickey; ?>"></div>
 			</div>
 		</div>
 	</div><!-- Form Group -->
@@ -834,5 +861,6 @@ echo $page_info1;
   		$('#user_screen_name').focus();
 	});
 </script>
+<script src="https://www.google.com/recaptcha/api.js"></script>
 <?php } // end else ?>
 <?php } // end else ?>

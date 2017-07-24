@@ -3,8 +3,8 @@ require('../paths.php');
 session_name($prefix_session);
 require(CONFIG.'bootstrap.php');
 require(LIB.'output.lib.php');
-include(CLASSES.'tiny_but_strong/tbs_class.php');
-include(DB.'output_entry.db.php');
+include (CLASSES.'tiny_but_strong/tbs_class.php');
+include (DB.'output_entry.db.php');
 
 $entry_closed = getTimeZoneDateTime($_SESSION['prefsTimeZone'], $row_contest_dates['contestEntryDeadline'], $_SESSION['prefsDateFormat'],$_SESSION['prefsTimeFormat'], "long", "date-no-gmt");
 $contest_name = $contest_info['contestName'];
@@ -28,7 +28,10 @@ if ((!pay_to_print($_SESSION['prefsPayToPrint'],$brewing_info['brewPaid'])) && (
 }
 
 if ($_SESSION['prefsStyleSet'] == "BJCP2008") $category_end = 23; else $category_end = 34;
-
+if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
+	$brewing_info['brewCategory'] = "";
+	$brewing_info['brewSubCategory'] = "";
+}
 $brewing_id = sprintf("%04s",$brewing_info['id']);
 $brewer_info['brewerFirstName'] = strtr($brewer_info['brewerFirstName'],$html_remove);
 $brewing_info['brewName'] = strtr($brewing_info['brewName'],$html_remove);

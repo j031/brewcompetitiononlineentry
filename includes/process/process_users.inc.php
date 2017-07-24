@@ -8,11 +8,11 @@ if (isset($_SERVER['HTTP_REFERER'])) {
 	
 	// --------------------------- If a User Registers On Their Own -------------------- //
 	
-	if (($action == "add") && ($section == "register")) include_once (PROCESS.'process_users_register.inc.php');
+	if (($action == "add") && ($section == "register")) include (PROCESS.'process_users_register.inc.php');
 	
 	// --------------------------- SETUP: Adding the Admin Participant ----------------- //
 	
-	if (($action == "add") && ($section == "setup")) 	include_once (PROCESS.'process_users_setup.inc.php');
+	if (($action == "add") && ($section == "setup")) 	include (PROCESS.'process_users_setup.inc.php');
 	
 	// --------------------------- Adding a user (Admin only) -------------------------- //
 	
@@ -87,7 +87,7 @@ if (isset($_SERVER['HTTP_REFERER'])) {
 	}
 		
 	// ---------------------------  Editing a User -------------------------------------------
-	if (($action == "edit") && ($_SESSION['editUser'] == 1)) {
+	if (($action == "edit") && ($_POST['userEdit'] == 1)) {
 		
 		// Check to see if email address is already in the system. If so, redirect.
 		if (isset($_POST['user_name'])) {

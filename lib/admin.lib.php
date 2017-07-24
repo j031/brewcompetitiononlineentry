@@ -82,12 +82,14 @@ function bos_entry_info($eid,$table_id,$filter) {
 		$entry_db_table = $prefix."brewing_".$filter;
 		$judging_tables_db_table = $prefix."judging_tables_".$filter;
 		$bos_scores_db_table = $prefix."judging_scores_bos_".$filter;
+		$brewer_db_table = $prefix."brewer_".$filter;
 	}
 	
 	else {
 		$entry_db_table = $prefix."brewing";
 		$judging_tables_db_table = $prefix."judging_tables";
 		$bos_scores_db_table = $prefix."judging_scores_bos";
+		$brewer_db_table = $prefix."brewer";
 	}
 	
 	$query_entries_1 = sprintf("SELECT id,brewStyle,brewCategorySort,brewCategory,brewSubCategory,brewName,brewBrewerFirstName,brewBrewerLastName,brewJudgingNumber,brewBrewerID FROM %s WHERE id='%s'", $entry_db_table, $eid);
@@ -102,15 +104,19 @@ function bos_entry_info($eid,$table_id,$filter) {
 		
 	$query_bos_place_1 = sprintf("SELECT id,scorePlace,scoreEntry FROM %s WHERE eid='%s'", $bos_scores_db_table, $eid);
 	$bos_place_1 = mysqli_query($connection,$query_bos_place_1) or die (mysqli_error($connection));
-	$row_bos_place_1 = mysqli_fetch_assoc($bos_place_1);	
+	$row_bos_place_1 = mysqli_fetch_assoc($bos_place_1);
+	
+	$query_brewer = sprintf("SELECT brewerLastName,brewerFirstName,brewerBreweryName FROM %s WHERE id='%s'", $brewer_db_table, $row_entries_1['brewBrewerID']);
+	$brewer = mysqli_query($connection,$query_brewer) or die (mysqli_error($connection));
+	$row_brewer = mysqli_fetch_assoc($brewer);
 	
 	$return = 
 	$row_entries_1['brewStyle']."^".  			// 0
 	$row_entries_1['brewCategorySort']."^".  	// 1
 	$row_entries_1['brewCategory']."^".  		// 2
 	$row_entries_1['brewSubCategory']."^".  		// 3
-	$row_entries_1['brewBrewerFirstName']."^".  	// 4
-	$row_entries_1['brewBrewerLastName']."^".  	// 5
+	$row_brewer['brewerFirstName']."^".  	// 4
+	$row_brewer['brewerLastName']."^".  	// 5
 	$row_entries_1['brewJudgingNumber']."^".   	// 6
 	$row_tables_1['id']."^".  					// 7
 	$row_tables_1['tableName']."^".   			// 8
@@ -120,7 +126,8 @@ function bos_entry_info($eid,$table_id,$filter) {
 	$row_entries_1['brewName']."^".  			// 12
 	$row_entries_1['id']."^".   					// 13
 	$row_bos_place_1['id']."^".   				// 14
-	$row_entries_1['brewBrewerID']; 				// 15
+	$row_entries_1['brewBrewerID']."^". 				// 15
+	$row_brewer['brewerBreweryName']; //16
 	
 	return $return;
 }
@@ -161,7 +168,7 @@ function score_style_data($value) {
 	
 	else {
 		
-		include(INCLUDES.'ba_constants.inc.php');
+		include (INCLUDES.'ba_constants.inc.php');
 		
 		$value1 = ($value - 1);
 		
@@ -425,7 +432,7 @@ function score_custom_winning_choose($special_best_info_db_table,$special_best_d
 	else { 
 		$r = "<li class=\"disabled small\"><a href=\"#\">No custom categories have been defined</a></li>";
 		$r .= "<li role=\"separator\" class=\"divider\"></li>";
-		$r .= "<li class=\"small\"><a href=\"".$base_url."index.php?section=admin&amp;go=special_best&amp;action=add\">Add a Custom Category</a></li>";
+		$r .= "<li class=\"small\"><a href=\"".$base_url."index.php?section=admin&amp;go=special_best&amp;action=add\">Add a Custom Style</a></li>";
 	}
 	return $r;
 }
@@ -735,7 +742,7 @@ function table_score_data($eid,$score_table,$suffix) {
 	$row_tables = mysqli_fetch_assoc($tables);
 	$totalRows_tables = mysqli_num_rows($tables);
 	
-	$query_brewer = sprintf("SELECT brewerLastName,brewerFirstName FROM %s WHERE id='%s'", $prefix."brewer".$suffix, $row_entries['brewBrewerID']);
+	$query_brewer = sprintf("SELECT brewerLastName,brewerFirstName,brewerBreweryName FROM %s WHERE id='%s'", $prefix."brewer".$suffix, $row_entries['brewBrewerID']);
 	$brewer = mysqli_query($connection,$query_brewer) or die (mysqli_error($connection));
 	$row_brewer = mysqli_fetch_assoc($brewer);
 	
@@ -753,7 +760,8 @@ function table_score_data($eid,$score_table,$suffix) {
 	$row_tables['tableName']."^". //10
 	$row_tables['tableNumber']."^". //11
 	$style."^". //12
-	$style_name; //13
+	$style_name."^". //13
+	$row_brewer['brewerBreweryName']; //14
 	
 	return $return;
 
@@ -761,8 +769,8 @@ function table_score_data($eid,$score_table,$suffix) {
 
 
 function received_entries() {
-	include(CONFIG.'config.php');
-	//include(INCLUDES.'db_tables.inc.php');
+	include (CONFIG.'config.php');
+	//include (INCLUDES.'db_tables.inc.php');
 	mysqli_select_db($connection,$database);
 	$style_array = array();
 	
@@ -786,8 +794,8 @@ function received_entries() {
 
 
 function assigned_judges($tid,$dbTable,$judging_assignments_db_table){
-	include(CONFIG.'config.php');
-	//include(INCLUDES.'db_tables.inc.php');
+	include (CONFIG.'config.php');
+	//include (INCLUDES.'db_tables.inc.php');
 	mysqli_select_db($connection,$database);
 	$query_assignments = sprintf("SELECT COUNT(*) as 'count' FROM %s WHERE assignTable='%s' AND assignment='J'", $judging_assignments_db_table, $tid);
 	$assignments = mysqli_query($connection,$query_assignments) or die (mysqli_error($connection));
@@ -800,13 +808,13 @@ function assigned_judges($tid,$dbTable,$judging_assignments_db_table){
 		$icon = "fa-edit";
 		$title = "Edit judges assigned to this table.";
 	}
-	if ($dbTable == "default") $r = '<a href="'.$base_url.'index.php?section=admin&action=assign&go=judging_tables&filter=judges&id='.$tid.'" data-toggle="tooltip" data-placement="top" title="'.$title.'"><span class="fa fa-lg '.$icon.'"></span></a> '.$row_assignments['count'];
+	if ($dbTable == "default") $r = $row_assignments['count'].' <a href="'.$base_url.'index.php?section=admin&action=assign&go=judging_tables&filter=judges&id='.$tid.'" data-toggle="tooltip" data-placement="top" title="'.$title.'"><span class="fa fa-lg '.$icon.'"></span></a>';
 	else $r = $row_assignments['count'];
 	return $r;
 }
 
 function assigned_stewards($tid,$dbTable,$judging_assignments_db_table){
-	include(CONFIG.'config.php');	
+	include (CONFIG.'config.php');	
 	mysqli_select_db($connection,$database);
 	$query_assignments = sprintf("SELECT COUNT(*) as 'count' FROM %s WHERE assignTable='%s' AND assignment='S'", $judging_assignments_db_table, $tid);
 	$assignments = mysqli_query($connection,$query_assignments) or die (mysqli_error($connection));
@@ -819,13 +827,13 @@ function assigned_stewards($tid,$dbTable,$judging_assignments_db_table){
 		$icon = "fa-edit";
 		$title = "Edit stewards assigned to this table.";
 	}
-	if ($dbTable == "default") $r = '<a href="'.$base_url.'index.php?section=admin&action=assign&go=judging_tables&filter=stewards&id='.$tid.'" data-toggle="tooltip" data-placement="top" title="'.$title.'"><span class="fa fa-lg '.$icon.'"></span></a> '.$row_assignments['count'];
+	if ($dbTable == "default") $r = $row_assignments['count'].' <a href="'.$base_url.'index.php?section=admin&action=assign&go=judging_tables&filter=stewards&id='.$tid.'" data-toggle="tooltip" data-placement="top" title="'.$title.'"><span class="fa fa-lg '.$icon.'"></span></a>';
 	else $r = $row_assignments['count'];
 	return $r;
 }
 
 function date_created($uid,$date_format,$time_format,$timezone,$dbTable) {
-	include(CONFIG.'config.php');	
+	include (CONFIG.'config.php');	
 	mysqli_select_db($connection,$database);
 	if ($dbTable != "default") $dbTable = $dbTable; else $dbTable = $prefix."users";
 	$query1 = sprintf("SHOW COLUMNS FROM %s LIKE 'userCreated'",$dbTable);
@@ -850,7 +858,7 @@ function date_created($uid,$date_format,$time_format,$timezone,$dbTable) {
 }
 
 function user_info($uid) {
-	include(CONFIG.'config.php');	
+	include (CONFIG.'config.php');	
 	mysqli_select_db($connection,$database);
 	$query_user1 = sprintf("SELECT id,userLevel FROM %s WHERE id = '%s'", $prefix."users", $uid);
 	$user1 = mysqli_query($connection,$query_user1) or die (mysqli_error($connection));
@@ -862,7 +870,7 @@ function user_info($uid) {
 }
 
 function sbd_count($id) {
-	include(CONFIG.'config.php');	
+	include (CONFIG.'config.php');	
 	mysqli_select_db($connection,$database);
 	$query_sbd = sprintf("SELECT COUNT(*) as 'count' FROM %s WHERE sid='%s'",$prefix."special_best_data",$id);
 	$sbd = mysqli_query($connection,$query_sbd) or die (mysqli_error($connection));
@@ -871,7 +879,7 @@ function sbd_count($id) {
 }
 
 function special_best_info($sid) {
-	include(CONFIG.'config.php');	
+	include (CONFIG.'config.php');	
 	mysqli_select_db($connection,$database);
 	$query_sbi = sprintf("SELECT id,sbi_name FROM %s WHERE id='%s'",$prefix."special_best_info",$sid); 
 	$sbi = mysqli_query($connection,$query_sbi) or die (mysqli_error($connection));
@@ -1213,7 +1221,6 @@ function not_assigned($method) {
 		}
 		
 		// Return the modal body text
-		
 		
 		if (!empty($assignment)) {
 			$return .= "<p>These ".$human_readable."s have not been assigned to any table.</p>";

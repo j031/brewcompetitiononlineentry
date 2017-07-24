@@ -60,22 +60,25 @@ $page_info7 = "";
 $header1_8 = ""; 
 $page_info8 = "";
 
-if (($registration_open == 1) && (!isset($_SESSION['loginUsername']))) { 
+if (($registration_open == 1) && ($judge_window_open == 1) && (!isset($_SESSION['loginUsername']))) { 
 	
 	if (($judge_limit) && (!$steward_limit)) {
 		$header1_1 .= sprintf("<h2>%s <span class='text-success'>%s</span></h2>",$reg_open_text_016,$reg_open_text_001);
 		$page_info1 .= sprintf("<p><strong class=\"text-danger\">%s</strong></p>",$alert_text_072);
 		$page_info1 .= sprintf("<p>%s %s.</p>",$reg_open_text_002,$reg_open_text_003);
 	}
+	
 	if ((!$judge_limit) && ($steward_limit)) {
 		$header1_1 .= sprintf("<h2>%s <span class='text-success'>%s</span></h2>",$reg_open_text_015,$reg_open_text_001);
 		$page_info1 .= sprintf("<p><strong class=\"text-danger\">%s</strong></p>",$alert_text_076);
 		$page_info1 .= sprintf("<p>%s %s.</p>",$reg_open_text_002,$reg_open_text_003);	
 	}
+	
 	if ((!$judge_limit) && (!$steward_limit)) {
 		$header1_1 .= sprintf("<h2>%s <span class='text-success'>%s</span></h2>",$reg_open_text_000,$reg_open_text_001) ;
 		$page_info1 .= sprintf("<p>%s %s.</p>",$reg_open_text_002,$reg_open_text_003);
 	}
+	
 	$page_info1 .= sprintf("<p>%s <span class=\"fa fa-lg fa-user\"></span> %s</p>",$reg_open_text_004,$reg_open_text_005);
 }
 
@@ -84,7 +87,7 @@ if (($registration_open == 1) && (!isset($_SESSION['brewerBreweryName'])) && (is
 if ($registration_open != 1) $page_info1 .= sprintf("<p>%s %s.</p>",$reg_open_text_009,$judge_open);
 
 
-if ($entry_window_open == 1) {
+if (($entry_window_open == 1) && ($show_entires)) {
 	$header1_2 .= sprintf("<h2>%s <span class='text-success'>%s</a></h2>",$reg_open_text_010,$reg_open_text_001); 
 	
 	if ($_SESSION['prefsProEdition'] == 0)  {

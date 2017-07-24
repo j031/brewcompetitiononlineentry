@@ -15,7 +15,7 @@ if (($filter != "default") && ($filter != "rounds"))  {
 	
 		if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) $style_name = style_convert($value,"8");
 	
-		include(DB.'admin_judging_flights.db.php');
+		include (DB.'admin_judging_flights.db.php');
 	
 		do {
 			
@@ -63,6 +63,7 @@ if (($filter != "default") && ($filter != "rounds"))  {
 			$flight_table_tbody .= "</td>\n";
 			$flight_table_tbody .= "<td>";
 			$flight_table_tbody .= str_replace("^","; ",$row_entries['brewInfo']);
+			if (!empty($row_entries['brewInfoOptional'])) $flight_table_tbody .= $row_entries['brewInfoOptional'];
 			$flight_table_tbody .= "</td>\n";
 			$flight_table_tbody .= "</tr>\n";
 	
@@ -259,7 +260,7 @@ if (($action == "assign") && ($filter == "rounds")) {
 		
 		foreach (array_unique($a) as $flight_table) {
 			
-			include(DB.'admin_judging_flights.db.php');
+			include (DB.'admin_judging_flights.db.php');
 			//echo $query_flights."<br>";
 			//echo $totalRows_flights."<br>";
 			

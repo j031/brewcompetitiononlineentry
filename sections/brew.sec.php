@@ -5,13 +5,13 @@
  *              entries - references the "brewing" database table.
  *
  */
-include(DB.'styles.db.php'); 
-include(DB.'entries.db.php');
+include (DB.'styles.db.php'); 
+include (DB.'entries.db.php');
 if (strpos($styleSet,"BABDB") !== false) include (INCLUDES.'ba_constants.inc.php');
-include(DB.'styles_special.db.php');
+include (DB.'styles_special.db.php');
 
 // Disable fields trigger
-if ((($action == "add") && ($remaining_entries == 0) && ($_SESSION['userLevel'] == 2)) || (($action == "add") && ($entry_window_open == "2") && ($_SESSION['userLevel'] == 2))) $disable_fields = TRUE; else $disable_fields = FALSE;
+if ((($action == "add") && ($remaining_entries <= 0) && ($_SESSION['userLevel'] == 2)) || (($action == "add") && ($entry_window_open == "2") && ($_SESSION['userLevel'] == 2))) $disable_fields = TRUE; else $disable_fields = FALSE;
 	
 // Specific code for Style select
 if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
@@ -91,7 +91,9 @@ if (($_SESSION['userLevel'] == 2) && ($action == "edit")) {
 	
 	do { $user_entries[] = $row_brews['id'];  } while ($row_brews = mysqli_fetch_assoc($brews));
 	
-	if (!in_array($id,$user_entries)) { $edit_entry_disable = TRUE; echo "<p>You are only able to edit your own entries.</p>"; }
+	if (!in_array($id,$user_entries)) { 
+		$edit_entry_disable = TRUE; echo "<p>You are only able to edit your own entries.</p>";
+	}
 }
 
 // Adding an entry not allowed conditionals for non-admins
@@ -100,7 +102,8 @@ if ($action == "add") {
 	// Registration and entry windows open; comp entry limit reached
 	if (($registration_open == 1) && ($entry_window_open == 1) && ($_SESSION['userLevel'] == 2)) { 
 		if ($comp_entry_limit) $add_entry_disable = TRUE;
-		elseif ($comp_paid_entry_limit)  $add_entry_disable = TRUE;
+		elseif ($remaining_entries <= 0) $add_entry_disable = TRUE;
+		elseif ($comp_paid_entry_limit) $add_entry_disable = TRUE;
 		elseif (($proEdition) && (!isset($_SESSION['brewerBreweryName'])))  $add_entry_disable = TRUE;
 		else $add_entry_disable = FALSE;
 	}
@@ -108,11 +111,11 @@ if ($action == "add") {
 	// Registration closed and entry window open; comp entry limit reached
 	elseif ((($registration_open == 0) || ($registration_open == 2)) && ($entry_window_open == 1) && ($_SESSION['userLevel'] == 2)) {
 		if ($comp_entry_limit) $add_entry_disable = TRUE;
+		elseif ($remaining_entries <= 0) $add_entry_disable = TRUE;
 		elseif ($comp_paid_entry_limit) $add_entry_disable = TRUE;
-		elseif (($proEdition) && (!isset($_SESSION['brewerBreweryName'])))  $add_entry_disable = TRUE;
+		elseif (($proEdition) && (!isset($_SESSION['brewerBreweryName']))) $add_entry_disable = TRUE;
 		else $add_entry_disable = FALSE;
 	}
-	
 	
 }
 // Registration and entry not open
@@ -131,8 +134,19 @@ if (($proEdition) && (!isset($_SESSION['brewerBreweryName'])) && ($adminUser) &&
 	$adminUserAddDisable = TRUE;
 }
 
-if (((!$add_entry_disable) && (!$edit_entry_disable) && ($remaining_entries > 0)) || (($adminUser) && (!$adminUserAddDisable))) {
-	
+if (($add_entry_disable) || ($edit_entry_disable))  echo "<p class=\"lead\">".$alert_text_083."</p>";
+//if ($add_entry_disable) echo "<p>Add disabled.</p>";
+//if ($edit_entry_disable) echo "<p>Editing disabled.</p>";
+if (($adminUser) && ($adminUserAddDisable)) echo "<p>".$brew_text_029."</p>";
+elseif (($add_entry_disable) && (!$edit_entry_disable))  {
+	if (($proEdition) && (!isset($_SESSION['brewerBreweryName']))) { 
+		echo "<p class=\"lead\">".$alert_text_082."</p>";
+		if ($adminUser) echo "<p class=\"lead\"><small>".$alert_text_084."</small></p>";
+	}
+	else echo "<p class=\"lead\">".$alert_text_029."</p>";
+}
+
+else {	
 	// Decalre variables
 	if ($_SESSION['prefsStyleSet'] == "BJCP2008") $beer_end = 23;
 	if ($_SESSION['prefsStyleSet'] == "BJCP2015") $beer_end = 34;
@@ -143,7 +157,7 @@ if (((!$add_entry_disable) && (!$edit_entry_disable) && ($remaining_entries > 0)
 	if (($filter == "admin") || ($filter == "default")) $brewer_id = $_SESSION['user_id']; else $brewer_id = $filter; 
 	$brewer_info = brewer_info($brewer_id);
 	$brewer_info = explode("^",$brewer_info);
-	$brewInfo = $row_log['brewInfo'];
+	if (($action == "edit") && (!empty($row_log['brewInfo']))) $brewInfo = $row_log['brewInfo'];
 	
 	$brewPaid = 0;
 	
@@ -158,7 +172,7 @@ if (((!$add_entry_disable) && (!$edit_entry_disable) && ($remaining_entries > 0)
 	
 	// Define custom functions
 	function display_array_content_style($arrayname,$method,$base_url) {
-		include(LANG.'language.lang.php'); 
+		include (LANG.'language.lang.php'); 
 		$a = "";
 		sort($arrayname);
 		while(list($key, $value) = each($arrayname)) {
@@ -382,43 +396,44 @@ if (((!$add_entry_disable) && (!$edit_entry_disable) && ($remaining_entries > 0)
 	
 	}
 ?>
-<!-- Load JS Character Counter -->
-<script type="text/javascript">
-// Based upon http://www.9lessons.info/2010/04/live-character-count-meter-with-jquery.html
-$(document).ready(function()
-{
-	$("#brewInfo").keyup(function()
-	{
-		var box=$(this).val();
-		var main = box.length * 100;
-		var value= (main / <?php echo $_SESSION['prefsSpecialCharLimit']; ?>);
-		var count= <?php echo $_SESSION['prefsSpecialCharLimit']; ?> - box.length;
-		
-		if(box.length <= <?php echo $_SESSION['prefsSpecialCharLimit']; ?>)
-		{
-		$('#count').html(count);
-		}
-		return false;
-	}
-	);
+<script>
 	
-	$("#brewComments").keyup(function()
-	{
-		var box=$(this).val();
-		var main = box.length * 100;
-		var value= (main / <?php echo $_SESSION['prefsSpecialCharLimit']; ?>);
-		var count= <?php echo $_SESSION['prefsSpecialCharLimit']; ?> - box.length;
-		
-		if(box.length <= <?php echo $_SESSION['prefsSpecialCharLimit']; ?>)
-		{
-		$('#count-comments').html(count);
-		}
-		return false;
-	}
-	);
-}
-);
+	$(document).ready(function() {
+
+		$("#brewInfo").keyup(function()	{
+			var cs = $(this).val().length;
+			$('#countInfo').text(cs);
+		});
+
+		$("#brewInfo").keydown(function() {
+			var cs = $(this).val().length;
+			$('#countInfo').text(cs);
+		});
+
+		$("#brewInfoOptional").keyup(function()	{
+			var cs = $(this).val().length;
+			$('#countInfoOptional').text(cs);
+		});
+
+		$("#brewInfoOptional").keydown(function() {
+			var cs = $(this).val().length;
+			$('#countInfoOptional').text(cs);
+		});
+
+		$("#brewComments").keyup(function()	{
+			var cs = $(this).val().length;
+			$('#countComments').text(cs);
+		});
+
+		$("#brewComments").keydown(function() {
+			var cs = $(this).val().length;
+			$('#countComments').text(cs);
+		});
+	
+	});
+
 </script>
+
 <?php echo $modals; ?>
 <form data-toggle="validator" role="form" class="form-horizontal" action="<?php echo $base_url; ?>includes/process.inc.php?section=<?php echo admin_relocate($_SESSION['userLevel'],$go,$_SERVER['HTTP_REFERER']);?>&amp;action=<?php echo $action; ?>&amp;go=<?php echo $go;?>&amp;dbTable=<?php echo $brewing_db_table; ?>&amp;filter=<?php echo $filter; if ($id != "default") echo "&amp;id=".$id; ?>" method="POST" name="form1" id="form1" onSubmit="return CheckRequiredFields()">
 <?php if ($_SESSION['userLevel'] > 1) { ?>
@@ -467,7 +482,7 @@ $(document).ready(function()
         <div class="col-lg-10 col-md-9 col-sm-9 col-xs-12">
             <div class="input-group has-warning">
                 <!-- Input Here -->
-                <input class="form-control" name="brewName" type="text" value="<?php if ($disable_fields) echo "Not Available"; if ($action == "edit") echo $row_log['brewName']; ?>" <?php if ((($action == "add") && ($remaining_entries == 0) && ($entry_window_open == 1) && ($filter != "default")) || (($action == "add") && ($entry_window_open == "2") && ($_SESSION['userLevel'] > 1))) echo "disabled";?> placeholder="" data-error="<?php echo $brew_text_011; ?>" required autofocus>
+                <input class="form-control" name="brewName" type="text" value="<?php if ($disable_fields) echo "Not Available"; if ($action == "edit") echo $row_log['brewName']; ?>" <?php if ((($action == "add") && ($remaining_entries <= 0) && ($entry_window_open == 1) && ($filter != "default")) || (($action == "add") && ($entry_window_open == "2") && ($_SESSION['userLevel'] > 1))) echo "disabled";?> placeholder="" data-error="<?php echo $brew_text_011; ?>" required autofocus>
                 <span class="input-group-addon" id="brewName-addon2"><span class="fa fa-star"></span></span>
             </div>
             <div class="help-block with-errors"></div>
@@ -480,8 +495,7 @@ $(document).ready(function()
         <label for="brewStyle" class="col-lg-2 col-md-3 col-sm-3 col-xs-12 control-label"><?php echo $style_set." ".$label_style; ?></label>
         <div class="col-lg-10 col-md-9 col-sm-9 col-xs-12">
         <!-- Input Here -->
-        <select class="selectpicker" name="brewStyle" id="type" data-live-search="true" data-size="10" data-width="auto" data-show-tick="true" data-header="<?php echo $label_select_style; ?>" title="<?php echo $label_select_style; ?>" required>
-			
+        <select class="selectpicker" name="brewStyle" id="type" data-live-search="true" data-size="5" data-width="auto" data-show-tick="true" data-header="<?php echo $label_select_style; ?>" title="<?php echo $label_select_style; ?>" required>
 			<option value="0-A" <?php if (($action == "add") || (($action == "edit") && ($view == "00-A"))) echo "selected"; ?>>Choose a Style</option>
             <option data-divider="true"></option>
             <?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) echo $styles_options;
@@ -526,7 +540,6 @@ $(document).ready(function()
         <span id="helpBlock" class="help-block">&spades; = <?php echo $brew_text_004; ?><br />&diams; = <?php echo $brew_text_005; ?><br />&clubs; = <?php echo $brew_text_006; ?><br />&hearts; = <?php echo $brew_text_007; ?></p></span>
         </div>
     </div><!-- ./Form Group -->
-        
     <!-- Entry Requirements -->
 	<div id="specialInfo" class="form-group">
     	<label for="brewInfo" class="col-lg-2 col-md-3 col-sm-3 col-xs-12 control-label"><?php echo $brew_text_009; ?> <span id="specialInfoName">Style Name</span></label>
@@ -535,18 +548,26 @@ $(document).ready(function()
         	<div id="specialInfoText" class="form-control-static">Entry info goes here.</div>
         </div>
     </div>
-    
     <!-- Enter Special Ingredients -->
 	<div id="special" class="form-group <?php if ($highlight_special) echo "has-error"; elseif (($action == "edit") && ($special_required)) echo "has-warning"; ?>"><!-- Form Group REQUIRED Text Input -->
         <label for="brewInfo" class="col-lg-2 col-md-3 col-sm-3 col-xs-12 control-label"><?php echo $label_required_info; ?></label>
         	<div class="col-lg-10 col-md-9 col-sm-9 col-xs-12">  
-        		<textarea class="form-control" rows="8" name="brewInfo" id="brewInfo" data-error="<?php echo $brew_text_010; ?>" maxlength="<?php echo $_SESSION['prefsSpecialCharLimit']; ?>" <?php if ($highlight_special) echo "autofocus"; elseif (($action == "edit") && ($special_required)) echo "autofocus"; ?>><?php echo $brewInfo; ?></textarea>      	
-            	 
+        		<textarea class="form-control" rows="8" name="brewInfo" id="brewInfo" data-error="<?php echo $brew_text_010; ?>" maxlength="<?php echo $_SESSION['prefsSpecialCharLimit']; ?>" <?php if ($highlight_special) echo "autofocus"; elseif (($action == "edit") && ($special_required)) echo "autofocus"; ?>><?php echo $brewInfo; ?></textarea>
             <div class="help-block with-errors"><?php if ((strpos($styleSet,"BABDB") !== false) && ($view_explodies[0] < 28)) echo $brew_text_027; ?></div>
-            <div id="helpBlock" class="help-block"><p><?php echo $_SESSION['prefsSpecialCharLimit'].$label_character_limit; ?><span id="count"><?php echo $_SESSION['prefsSpecialCharLimit']; ?></span></p></div>
+            <div id="helpBlock" class="help-block"><p><?php echo $_SESSION['prefsSpecialCharLimit'].$label_character_limit; ?><span id="countInfo"><?php echo $_SESSION['prefsSpecialCharLimit']; ?></span></p></div>
         </div>
     </div><!-- ./Form Group -->
-    
+    <!-- Optional Information -->
+    <div id="optional" class="form-group"><!-- Form Group REQUIRED Text Input -->
+        <label for="brewInfoOptional" class="col-lg-2 col-md-3 col-sm-3 col-xs-12 control-label"><?php echo $label_optional_info; ?></label>
+        	<div class="col-lg-10 col-md-9 col-sm-9 col-xs-12">  
+        		<textarea class="form-control" rows="8" name="brewInfoOptional" id="brewInfoOptional" data-error="<?php echo $brew_text_010; ?>" maxlength="<?php echo $_SESSION['prefsSpecialCharLimit']; ?>" placeholder="<?php echo $brew_text_028; ?>"><?php echo $row_log['brewInfoOptional']; ?></textarea>      	
+            	 
+            <div class="help-block with-errors"><?php if ((strpos($styleSet,"BABDB") !== false) && ($view_explodies[0] < 28)) echo $brew_text_027; ?></div>
+            <div id="helpBlock" class="help-block"><p><?php echo $_SESSION['prefsSpecialCharLimit'].$label_character_limit; ?><span id="countInfoOptional"><?php echo $_SESSION['prefsSpecialCharLimit']; ?></span></p></div>
+        </div>
+    </div><!-- ./Form Group -->
+    <!-- Lambic Carbonation -->
     <div id="carbLambic" class="form-group">
     	<label for="carbLambic" class="col-lg-2 col-md-3 col-sm-3 col-xs-12 control-label"><?php echo $label_carbonation; ?></label>
         <div class="col-lg-10 col-md-9 col-sm-9 col-xs-12">
@@ -562,6 +583,7 @@ $(document).ready(function()
             <div class="help-block with-errors"></div>
         </div>
     </div>
+    <!-- Lambic Sweetness -->
     <div id="sweetnessLambic" class="form-group">
     	<label for="sweetnessLambic" class="col-lg-2 col-md-3 col-sm-3 col-xs-12 control-label"><?php echo $label_sweetness; ?></label>
         <div class="col-lg-10 col-md-9 col-sm-9 col-xs-12">
@@ -576,7 +598,8 @@ $(document).ready(function()
             </label>
             <div class="help-block with-errors"></div>
         </div>
-    </div>    
+    </div>
+    <!-- Saison Strength -->
     <div id="strengthSaison" class="form-group">
     	<label for="strengthSaison" class="col-lg-2 col-md-3 col-sm-3 col-xs-12 control-label"><?php echo $label_strength; ?></label>
         <div class="col-lg-10 col-md-9 col-sm-9 col-xs-12">
@@ -592,7 +615,7 @@ $(document).ready(function()
             <div class="help-block with-errors"></div>
         </div>
     </div>
-    
+    <!-- IPA Strength -->
     <div id="strengthIPA" class="form-group">
     	<label for="strengthIPA" class="col-lg-2 col-md-3 col-sm-3 col-xs-12 control-label"><?php echo $label_strength; ?></label>
         <div class="col-lg-10 col-md-9 col-sm-9 col-xs-12">
@@ -608,7 +631,7 @@ $(document).ready(function()
             <div class="help-block with-errors"></div>
         </div>
     </div>
-    
+ 	<!-- Biere de Garde Color -->
     <div id="BDGColor" class="form-group">
     	<label for="BDGColor" class="col-lg-2 col-md-3 col-sm-3 col-xs-12 control-label"><?php echo $label_color; ?></label>
         <div class="col-lg-10 col-md-9 col-sm-9 col-xs-12">
@@ -624,7 +647,7 @@ $(document).ready(function()
             <div class="help-block with-errors"></div>
         </div>
     </div>
-    
+    <!-- Light or Dark Color -->
     <div id="darkLightColor" class="form-group">
     	<label for="darkLightColor" class="col-lg-2 col-md-3 col-sm-3 col-xs-12 control-label"><?php echo $label_color; ?></label>
         <div class="col-lg-10 col-md-9 col-sm-9 col-xs-12">
@@ -636,9 +659,7 @@ $(document).ready(function()
             </label>
             <div class="help-block with-errors"></div>
         </div>
-    </div>
-    
-    
+    </div>    
     <!-- Select Strength -->
     <div id="strength">	
     	<div class="form-group"><!-- Form Group Radio INLINE -->
@@ -660,7 +681,6 @@ $(document).ready(function()
             </div>
         </div><!-- ./Form Group -->
     </div>
-    
 	<!-- Select Carbonation -->
     <div id="carbonation">
         <div id="selectCarbonation" class="form-group"><!-- Form Group Radio INLINE -->
@@ -719,7 +739,7 @@ $(document).ready(function()
             <span id="helpBlock" class="help-block">
             	<p><strong class="text-danger"><?php echo $brew_text_013; ?></strong></p>
                 <p><strong class="text-primary"><?php echo $brew_text_014; ?></strong></p>
-                <p><?php echo $label_character_limit; ?> <span id="count-comments"><?php echo $_SESSION['prefsSpecialCharLimit']; ?></span></p>
+                <p><?php echo $_SESSION['prefsSpecialCharLimit'].$label_character_limit; ?><span id="countComments"><?php echo $_SESSION['prefsSpecialCharLimit']; ?></span></p>
             </span>
         </div>
     </div><!-- ./Form Group -->
@@ -767,7 +787,6 @@ $(document).ready(function()
                 </div>
             </div>
         </div>
-        
         <!-- Gravities Panel -->
         <div class="panel panel-default">
             <div class="panel-heading">
@@ -794,7 +813,6 @@ $(document).ready(function()
                 </div>
             </div>
         </div>
-        
         <!-- Extract Panel -->
         <div class="panel panel-default">
             <div class="panel-heading">
@@ -841,7 +859,6 @@ $(document).ready(function()
                 </div><!-- ./New Panel -->
             </div>
         </div>
-              
         <!-- Grains Panel -->
         <div class="panel panel-default">
             <div class="panel-heading">
@@ -888,7 +905,6 @@ $(document).ready(function()
                 </div>
             </div>
         </div><!-- ./New Panel -->
-        
         <!-- Misc Panel -->
         <div class="panel panel-default">
             <div class="panel-heading">
@@ -935,7 +951,6 @@ $(document).ready(function()
                 </div>
             </div>
         </div><!-- ./New Panel -->
-        
         <!-- Hops Panel -->
         <div class="panel panel-default">
             <div class="panel-heading">
@@ -1039,7 +1054,6 @@ $(document).ready(function()
                 </div>
             </div>
         </div><!-- ./New Panel -->
-        
         <!-- Mash Panel -->
         <div class="panel panel-default">
             <div class="panel-heading">
@@ -1077,7 +1091,6 @@ $(document).ready(function()
                 </div>
             </div>
         </div><!-- ./New Panel -->
-        
         <!-- Water Panel -->
         <div class="panel panel-default">
             <div class="panel-heading">
@@ -1097,7 +1110,6 @@ $(document).ready(function()
                 </div>
             </div>
         </div><!-- ./New Panel -->
-        
         <!-- Yeast Panel -->
         <div class="panel panel-default">
             <div class="panel-heading">
@@ -1224,7 +1236,6 @@ $(document).ready(function()
                         <input class="form-control" name="brewFinings" type="text" value="<?php if ($action == "edit") echo $row_log['brewFinings']; ?>" placeholder="">
                     </div>
                 </div><!-- ./Form Group -->
-                
                 <!-- Fermentation -->
                 <div class="form-group form-group-sm"><!-- Form Group Text Input -->
                     <label for="brewPrimary" class="col-lg-2 col-md-3 col-sm-3 col-xs-12 control-label"><?php echo $label_primary." ".$label_fermentation; ?></label>
@@ -1233,7 +1244,6 @@ $(document).ready(function()
                         <input class="form-control" name="brewPrimary" type="text" value="<?php if ($action == "edit") echo $row_log['brewPrimary']; ?>" placeholder="<?php echo $brew_text_023; ?>">
                     </div>
                 </div><!-- ./Form Group -->   
-                
                 <div class="form-group form-group-sm"><!-- Form Group Text Input -->
                     <label for="brewPrimaryTemp" class="col-lg-2 col-md-3 col-sm-3 col-xs-12 control-label"><?php echo $label_primary." ".$label_temperature; ?></label>
                     <div class="col-lg-10 col-md-9 col-sm-9 col-xs-12">
@@ -1269,7 +1279,6 @@ $(document).ready(function()
                         <input class="form-control" name="brewOtherTemp" type="text" value="<?php if ($action == "edit") echo $row_log['brewOtherTemp']; ?>" placeholder="&deg;<?php echo $_SESSION['prefsTemp']; ?>">
                     </div>
                 </div><!-- ./Form Group --> 
-                
                 <!-- Carbonation -->
                 <div class="form-group form-group-sm"><!-- Form Group Radio INLINE -->
                     <label for="brewCarbonationMethod" class="col-lg-2 col-md-3 col-sm-3 col-xs-12 control-label"><?php echo $label_carbonation; ?></label>
@@ -1318,7 +1327,7 @@ if ($action == "edit") {
 <div class="form-group">
     <div class="col-lg-offset-2 col-md-offset-3 col-sm-offset-3 col-xs-12">
         <!-- Input Here -->
-		<button name="submit" type="submit" class="btn btn-primary <?php if ($disable_fields) echo "disabled"; ?>" ><?php echo $submit_text; ?> <span class="fa fa-<?php echo $submit_icon; ?>"></span> </button>
+		<button name="submit" type="submit" class="btn btn-primary <?php if ($disable_fields) echo "disabled"; ?>" ><?php echo $submit_text; ?> <span class="fa fa-<?php echo $submit_icon; ?>"></span></button>
 	</div>
 </div><!-- Form Group -->
 </div>
@@ -1332,18 +1341,6 @@ if ($action == "edit") {
 </form>
 <?php
 // Load Show/Hide
-include(INCLUDES.'form_js.inc.php');
+include (INCLUDES.'form_js.inc.php');
 }  // end adding and editing allowed (line 52 or so)
-else {
-	
-if (($add_entry_disable) && ($edit_entry_disable))  echo "<p class=\"lead\">".$alert_text_083."</p>"; 
-if (($add_entry_disable) && (!$edit_entry_disable))  {
-	if (($proEdition) && (!isset($_SESSION['brewerBreweryName']))) { 
-		echo "<p class=\"lead\">".$alert_text_082."</p>";
-		if ($admin_user) echo "<p class=\"lead\"><small>".$alert_text_084."</small></p>";
-	}
-	else echo "<p class=\"lead\">".$alert_text_029."</p>";
-	}
-
-}
 ?>

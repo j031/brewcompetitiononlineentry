@@ -9,7 +9,7 @@
 
 if ((isset($_SERVER['HTTP_REFERER'])) && ((isset($_SESSION['loginUsername'])) && (isset($_SESSION['userLevel'])))) { 
 	
-	include(DB.'common.db.php');
+	include (DB.'common.db.php');
 	
 	$query_user = sprintf("SELECT userLevel FROM $users_db_table WHERE user_name = '%s'", $_SESSION['loginUsername']);
 	$user = mysqli_query($connection,$query_user) or die (mysqli_error($connection));
@@ -36,7 +36,7 @@ if ((isset($_SERVER['HTTP_REFERER'])) && ((isset($_SESSION['loginUsername'])) &&
 		
 		if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) include (INCLUDES.'ba_constants.inc.php');
 		
-		include(DB.'styles_special.db.php');
+		include (DB.'styles_special.db.php');
 		
 		// Comments
 		$brewComments = "";
@@ -63,14 +63,25 @@ if ((isset($_SERVER['HTTP_REFERER'])) && ((isset($_SESSION['loginUsername'])) &&
 		
 		// Get style name from broken parts if BA (currently there are 14 overall BA categories, 34 BJCP 2015, and 28 BJCP 2007)
 		// Custom style overall category will always be greater than 28
-		if ((strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) && ($style[0] > 28)) $query_style_name = sprintf("SELECT * FROM %s WHERE brewStyleOwn='custom' AND brewStyleGroup='%s' AND brewStyleNum='%s'",$styles_db_table,$styleFix,$style[1]);
+		if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
+			
+			if ($style[0] > 28) {
+				$query_style_name = sprintf("SELECT * FROM %s WHERE brewStyleOwn='custom' AND brewStyleGroup='%s' AND brewStyleNum='%s'",$styles_db_table,$styleFix,$style[1]);
+				$style_name = mysqli_query($connection,$query_style_name) or die (mysqli_error($connection));
+				$row_style_name = mysqli_fetch_assoc($style_name);
+				$styleName = $row_style_name['brewStyle'];
+			}
+			
+			else $styleName = $_SESSION['styles']['data'][$style[1]-1]['name'];
+		}
 		
 		// Get style name from broken parts if BJCP
-		else $query_style_name = sprintf("SELECT * FROM %s WHERE (brewStyleVersion='%s' OR brewStyleOwn='custom') AND brewStyleGroup='%s' AND brewStyleNum='%s'",$styles_db_table,$_SESSION['prefsStyleSet'],$styleFix,$style[1]);
-		$style_name = mysqli_query($connection,$query_style_name) or die (mysqli_error($connection));
-		$row_style_name = mysqli_fetch_assoc($style_name);
-			
-		$styleName = $row_style_name['brewStyle'];
+		else { 
+			$query_style_name = sprintf("SELECT * FROM %s WHERE (brewStyleVersion='%s' OR brewStyleOwn='custom') AND brewStyleGroup='%s' AND brewStyleNum='%s'",$styles_db_table,$_SESSION['prefsStyleSet'],$styleFix,$style[1]);
+			$style_name = mysqli_query($connection,$query_style_name) or die (mysqli_error($connection));
+			$row_style_name = mysqli_fetch_assoc($style_name);
+			$styleName = $row_style_name['brewStyle'];
+		}
 		
 		// Mark as paid if free entry fee
 		if ($_SESSION['contestEntryFee'] == 0) $brewPaid = "1"; 
@@ -78,13 +89,16 @@ if ((isset($_SERVER['HTTP_REFERER'])) && ((isset($_SESSION['loginUsername'])) &&
 		else $brewPaid = "0";
 		
 		$all_special_ing_styles = array();
-		if (is_array($special_beer)) $all_special_ing_styles = array_merge($all_special_ing_styles,$special_beer);
-		if (is_array($carb_str_sweet_special)) $all_special_ing_styles = array_merge($all_special_ing_styles,$carb_str_sweet_special);
-		if (is_array($spec_sweet_carb_only)) $all_special_ing_styles = array_merge($all_special_ing_styles,$spec_sweet_carb_only);
-		if (is_array($spec_carb_only)) $all_special_ing_styles = array_merge($all_special_ing_styles,$spec_carb_only);
-		if (strpos($styleSet,"BABDB") !== false) $all_special_ing_styles = array_merge($all_special_ing_styles,$ba_special);
 		
-		// $ba_special
+		if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) {
+			if (is_array($special_beer)) $all_special_ing_styles = array_merge($all_special_ing_styles,$special_beer);
+			if (is_array($carb_str_sweet_special)) $all_special_ing_styles = array_merge($all_special_ing_styles,$carb_str_sweet_special);
+			if (is_array($spec_sweet_carb_only)) $all_special_ing_styles = array_merge($all_special_ing_styles,$spec_sweet_carb_only);
+			if (is_array($spec_carb_only)) $all_special_ing_styles = array_merge($all_special_ing_styles,$spec_carb_only);
+		}
+		else { 
+			$all_special_ing_styles = array_merge($all_special_ing_styles,$ba_special_ids);
+		}
 		
 		$brewName = $_POST['brewName'];
 		$brewName = strip_tags($brewName);
@@ -95,7 +109,13 @@ if ((isset($_SERVER['HTTP_REFERER'])) && ((isset($_SESSION['loginUsername'])) &&
 		// Special Ingredients
 		$brewInfo = "";
 		
-		if (in_array($styleReturn,$all_special_ing_styles)) $brewInfo .= strip_tags($_POST['brewInfo']);
+		if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) {
+			if (in_array($styleReturn,$all_special_ing_styles)) $brewInfo .= strip_tags($_POST['brewInfo']);
+		}
+		else {
+			if (in_array($style[1],$all_special_ing_styles)) $brewInfo .= strip_tags($_POST['brewInfo']);
+			//echo $style[1]; print_r($all_special_ing_styles); echo $brewInfo; exit;
+		}
 		if (is_array($custom_entry_information)) {
 			if (array_key_exists($index,$custom_entry_information)) { 
 				$explodies = explode("|",$custom_entry["$index"]);
@@ -103,8 +123,16 @@ if ((isset($_SERVER['HTTP_REFERER'])) && ((isset($_SESSION['loginUsername'])) &&
 			}
 	 	}
 		
+		// Optional Ingredients
+		$brewInfoOptional = "";
+		
 		// Process specialized info from form for certain styles
 		if ($_SESSION['prefsStyleSet'] == "BJCP2015") {
+			
+			if (!isset($_POST['brewInfoOptional'])) {
+				$brewInfoOptional = strip_tags($_POST['brewInfoOptional']);
+				$brewInfoOptional = filter_var($brewInfoOptional,FILTER_SANITIZE_STRING);
+			}
 			
 			// Pale or Dark Variant
 			if (($index == "09-A") || ($index == "10-C") || ($index == "07-C"))  $brewInfo = $_POST['darkLightColor'];
@@ -140,9 +168,34 @@ if ((isset($_SERVER['HTTP_REFERER'])) && ((isset($_SESSION['loginUsername'])) &&
 		$brewMead2 = "";
 		$brewMead3 = "";
 		
-		if (isset($_POST['brewMead1'])) $brewMead1 .= $_POST['brewMead1']; // Carbonation
-		if (isset($_POST['brewMead2'])) $brewMead2 .= $_POST['brewMead2']; // Sweetness
-		if (isset($_POST['brewMead3'])) $brewMead3 .= $_POST['brewMead3']; // Strength
+		if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) {
+			
+			// check if style requires strength, carbonation, and/or sweetness
+			$query_str_carb_sweet = sprintf("SELECT * FROM %s WHERE brewStyleGroup='%s' AND brewStyleNum='%s'", $styles_db_table,$index,$style[1]);
+			$str_carb_sweet = mysqli_query($connection,$query_str_carb_sweet) or die (mysqli_error($connection));
+			$row_str_carb_sweet = mysqli_fetch_assoc($str_carb_sweet);
+			$totalRows_str_carb_sweet = mysqli_num_rows($str_carb_sweet);
+			
+			if ($totalRows_str_carb_sweet > 0) {
+				
+				if ((isset($_POST['brewMead1'])) && ($row_str_carb_sweet['brewStyleCarb'] == 1)) $brewMead1 .= $_POST['brewMead1']; // Carbonation
+				if ((isset($_POST['brewMead2'])) && ($row_str_carb_sweet['brewStyleSweet'] == 1))  $brewMead2 .= $_POST['brewMead2']; // Sweetness
+				if ((isset($_POST['brewMead3'])) && ($row_str_carb_sweet['brewStyleStrength'] == 1))  $brewMead3 .= $_POST['brewMead3']; // Strength
+				
+			}
+				
+			
+		}
+		
+		else {
+			
+			if ((isset($_POST['brewMead1'])) && (in_array($style[1],$ba_carb_ids))) $brewMead1 .= $_POST['brewMead1']; // Carbonation
+			if ((isset($_POST['brewMead2'])) && (in_array($style[1],$ba_sweetness_ids)))  $brewMead2 .= $_POST['brewMead2']; // Sweetness
+			if ((isset($_POST['brewMead3'])) && (in_array($style[1],$ba_strength_ids)))  $brewMead3 .= $_POST['brewMead3']; // Strength
+			
+		}
+		
+		
 		
 		/*
 		echo "Carb: ".$brewMead1."<br>";
@@ -249,9 +302,27 @@ if ((isset($_SERVER['HTTP_REFERER'])) && ((isset($_SESSION['loginUsername'])) &&
 			
 		}
 		
-		if (NHC) $brewJudgingNumber = "";
-		else $brewJudgingNumber = generate_judging_num(1,$styleTrim);
+		$brewJudgingNumber = "";
 		
+		$files = array_slice(scandir(USER_DOCS), 2);
+		$judging_number_looper = TRUE;
+			
+		while($judging_number_looper) {
+		
+			$generated_judging_number = generate_judging_num(1,$styleTrim);
+			$scoresheet_file_name_judging = $generated_judging_number.".pdf";
+		
+			if (!in_array($scoresheet_file_name_judging,$files))  { 
+				$brewJudgingNumber = $generated_judging_number;
+				$judging_number_looper = FALSE;
+			}
+			
+			else {
+				$judging_number_looper = TRUE;
+			}
+			
+		}
+			
 		$insertSQL = "INSERT INTO $brewing_db_table (";
 		if ($_SESSION['prefsHideRecipe'] == "N") { 
 			$insertSQL .= "
@@ -351,7 +422,8 @@ if ((isset($_SERVER['HTTP_REFERER'])) && ((isset($_SESSION['loginUsername'])) &&
 			brewUpdated,
 			brewConfirmed,
 			brewPaid,
-			brewReceived
+			brewReceived,
+			brewInfoOptional
 			) VALUES (";
 			
 			if ($_SESSION['prefsHideRecipe'] == "N") { 
@@ -466,10 +538,12 @@ if ((isset($_SERVER['HTTP_REFERER'])) && ((isset($_SESSION['loginUsername'])) &&
 			if ($_POST['brewStyle'] == "0-A") $insertSQL .= GetSQLValueString("0","text").", ";
 			else $insertSQL .= GetSQLValueString($_POST['brewConfirmed'],"text").", ";
 			$insertSQL .= GetSQLValueString($brewPaid,"text").", ";
-			$insertSQL .= GetSQLValueString("0","text");
-	
+			$insertSQL .= GetSQLValueString("0","text").", ";
+			$insertSQL .= GetSQLValueString($brewInfoOptional,"text");
 			$insertSQL .= ")";
-			
+		
+		
+		// echo $insertSQL; exit;
 		mysqli_real_escape_string($connection,$insertSQL);
 		$result = mysqli_query($connection,$insertSQL) or die (mysqli_error($connection));
 		
@@ -729,9 +803,11 @@ if ((isset($_SERVER['HTTP_REFERER'])) && ((isset($_SESSION['loginUsername'])) &&
 			$updateSQL .= "brewUpdated="."NOW( ), ";
 			$updateSQL .= "brewJudgingNumber=".GetSQLValueString($_POST['brewJudgingNumber'],"text").", ";
 			$updateSQL .= "brewPaid=".GetSQLValueString($brewPaid,"text").", ";
-			$updateSQL .= "brewConfirmed=".GetSQLValueString($_POST['brewConfirmed'],"text");
+			$updateSQL .= "brewConfirmed=".GetSQLValueString($_POST['brewConfirmed'],"text").", ";
+			$updateSQL .= "brewInfoOptional=".GetSQLValueString($brewInfoOptional,"text");
 			$updateSQL .= " WHERE id ='".$id."'";
 		
+		//echo $updateSQL; exit;
 		mysqli_real_escape_string($connection,$updateSQL);
 		$result = mysqli_query($connection,$updateSQL) or die (mysqli_error($connection));
 		

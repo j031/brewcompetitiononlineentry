@@ -43,7 +43,7 @@ if ($msg != "default") { ?>
 
 	if (($totalRows_log  > 0) && ($_SESSION['prefsStyleSet'] == "BJCP2008") && ($_SESSION['userLevel'] == 0) && ($go == "default")) {
 		
-		include(DB.'admin_judging_tables.db.php');		
+		include (DB.'admin_judging_tables.db.php');		
 		$bjcp_2008 = TRUE;
 		
 	} // end if (($totalRows_log  > 0) && ($_SESSION['prefsStyleSet'] == "BJCP2008") && ($_SESSION['userLevel'] == 0))
@@ -79,7 +79,7 @@ if ($msg != "default") { ?>
     <?php if (($totalRows_dropoff == "0") && ($go == "default")) { ?>
     	<div class="alert alert-danger alert-dismissible hidden-print fade in" role="alert">
         	<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        	<span class="fa fa-lg fa-exclamation-circle"></span> <?php echo $alert_text_005; ?>
+        	<span class="fa fa-lg fa-exclamation-circle"></span> <?php echo $alert_text_007; ?>
         </div>
     <?php } ?>
     

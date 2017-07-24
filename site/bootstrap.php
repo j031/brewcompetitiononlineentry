@@ -9,24 +9,11 @@
 
 /*
 
-reCaptcha Global Keys for BCOE&M
-
---- Version 1 ---
-Public Key: 	6LdquuQSAAAAAC3rsksvtjRmR9yPFmflBF4OWNS7
-Private Key:	6LdquuQSAAAAAHkf3dDRqZckRb_RIjrkofxE8Knd 
-
-Future Version
---- No CAPTCHA (Version 2) ---
-Public Key:		6LdUsBATAAAAAEJYbnqmygjGK-S6CHCoGcLALg5W
-Private Key:	6LdUsBATAAAAAMPhk5yRSmY5BMXlBgcTjiLjiyPb
-
-http://www.codediesel.com/security/integrating-googles-new-nocaptcha-recaptcha-in-php/
-
 */
 
 // ---------------------------- reCAPTCHA Public Key ----------------------------
 
-$publickey = "6LdquuQSAAAAAC3rsksvtjRmR9yPFmflBF4OWNS7";
+$publickey = "6LdUsBATAAAAAEJYbnqmygjGK-S6CHCoGcLALg5W";
 
 // ---------------------------- Base URL ----------------------------
 
@@ -40,7 +27,7 @@ $nhc_landing_url = "https://www.brewingcompetition.com";
 
 // ---------------------------- Preflight Checks ----------------------------
 
-require(LIB.'preflight.lib.php');
+require_once (LIB.'preflight.lib.php');
 
 // ---------------------------- Run Scripts ----------------------------
 
@@ -49,11 +36,11 @@ if ($setup_success) {
 	
 	// ---------------------------- Define URL Variables ----------------------------
 	
-	require(INCLUDES.'url_variables.inc.php');
+	require_once (INCLUDES.'url_variables.inc.php');
 	
 	// ---------------------------- Check if Valid Section -----------------------------
 	
-	$section_array = array("default","rules","entry","volunteers","contact","pay","list","admin","login","logout","check","brewer","user","setup","judge","beerxml","register","sponsors","past_winners","brew","step1","step2","step3","step4","step5","step6","step7","step8","update","confirm","delete","table_cards","participant_summary","loc","sorting","output_styles","map","driving","scores","entries","participants","emails","assignments","bos-mat","dropoff","summary","inventory","pullsheets","results","sorting","staff","styles","promo","table-cards","testing","notes","qr","shipping-label","particpant-entries");
+	$section_array = array("default","rules","entry","volunteers","contact","pay","list","admin","login","logout","check","brewer","user","setup","judge","beerxml","register","sponsors","past_winners","brew","step1","step2","step3","step4","step5","step6","step7","step8","update","confirm","delete","table_cards","participant_summary","loc","sorting","output_styles","map","driving","scores","entries","participants","emails","assignments","bos-mat","dropoff","summary","inventory","pullsheets","results","sorting","staff","styles","promo","table-cards","testing","notes","qr","shipping-label","particpant-entries","qr");
 	
 	// Redirect to 404 if section not the array	
 	if (!in_array($section,$section_array)) { 
@@ -88,7 +75,7 @@ if ($setup_success) {
 	
 	}
 	
-	// ---------------------------- Load Required Scripts ----------------------------
+	// ---------------------------- Load require_onced Scripts ----------------------------
 	
 	// **PREVENTING SESSION HIJACKING**
 	// Prevents javascript XSS attacks aimed to steal the session ID
@@ -101,18 +88,18 @@ if ($setup_success) {
 	// Uses a secure connection (HTTPS) if possible
 	ini_set('session.cookie_secure', 1);
 	
-	if (SINGLE) require(SSO.'sso.inc.php');
+	if (SINGLE) require_once(SSO.'sso.inc.php');
 		
-	require(LIB.'common.lib.php'); // OK
-	require(INCLUDES.'db_tables.inc.php'); // OK
-	require(LIB.'help.lib.php'); // OK
-	require(DB.'common.db.php');
-	require(DB.'brewer.db.php');
-	require(DB.'entries.db.php');
-	require(LANG.'language.lang.php');
-	require(INCLUDES.'constants.inc.php');
-	require(INCLUDES.'headers.inc.php');
-	require(INCLUDES.'scrubber.inc.php');
+	require_once (LIB.'common.lib.php'); // OK
+	require_once (INCLUDES.'db_tables.inc.php'); // OK
+	require_once (LIB.'help.lib.php'); // OK
+	require_once (DB.'common.db.php');
+	require_once (DB.'brewer.db.php');
+	require_once (DB.'entries.db.php');
+	require_once (INCLUDES.'constants.inc.php');
+	require_once (LANG.'language.lang.php');
+	require_once (INCLUDES.'headers.inc.php');
+	require_once (INCLUDES.'scrubber.inc.php');
 	if ($_SESSION['prefsSEF'] == "Y") $sef = "true";
 	else $sef = "false";
 	

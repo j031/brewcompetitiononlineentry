@@ -3,7 +3,7 @@
  * Module:        config.php 
  * Description:   This module houses configuration variables for DB connection, etc.
  *              
- * Last Modified: August 17, 2015
+ * Last Modified: July 15, 2017
  */
 /*
 
@@ -100,6 +100,31 @@ $prefix = "comp1_";
 */
 
 $prefix = "";
+
+/*
+******************************************************************************
+Installation ID.
+******************************************************************************
+Give your installation a unique ID. If you plan on running multiple instances
+of BCOE&M from the same domain, you'll need to give each installation a 
+unique identifier. This prevents "cross-pollination" of session data display.
+
+For single installations, the default below will be sufficient. Otherwise,
+change the variable to something completely unique for each installation.
+
+*/
+
+$installation_id = "";
+
+/*
+******************************************************************************
+User session time out
+******************************************************************************
+Define the time (in minutes) that a user's session will be active before it 
+expires due to inactivity. Default is 30 minutes.
+*/
+
+$session_expire_after = 30;
 
 /*
 ******************************************************************************
