@@ -56,7 +56,8 @@ switch($section) {
 
 	case "register":
 	$header_output = $_SESSION['contestName'];
-	if (($registration_open != 1) && (!$ua) && (!isset($_SESSION['loginUsername'])) && ($judge_window_open == 1) && ($msg == "default")) $header_output .= " - ".$label_judge_steward_reg;
+	if ($go == "judge") $header_output .= " - ".$label_judge_reg;
+	elseif ($go == "steward") $header_output .= " - ".$label_steward_reg;
 	else $header_output .= " - ".$label_reg;
 	if     ($msg == "1") $output = sprintf("<strong>%s</strong> %s",$header_text_017, $header_text_008);
 	elseif ($msg == "2") { $output = sprintf("<strong>%s</strong>",$header_text_018); $output_extend = sprintf("<p>%s <a href=\"index.php?section=login\">%s</a></p>",$header_text_019,$header_text_020); }
@@ -440,7 +441,7 @@ switch($section) {
 
 	case "beerxml":
 	include (DB.'styles.db.php');
-	$header_output = $header_text_058;
+	$header_output = $header_text_059;
 	if ($msg == "1") $output = sprintf("<strong>%s</strong>",$header_text_060);
 	if ($msg == "2") $output = sprintf("<strong>%s</strong>",$header_text_061);
 	break;
@@ -520,7 +521,7 @@ switch($section) {
 			break;
 
 			case "judging_scores_bos":
-			$header_output .= ": ".$label_admin_web_prefs;
+			$header_output .= ": ".$label_admin_bos;
 			break;
 
 			case "style_types":
@@ -532,7 +533,7 @@ switch($section) {
 			break;
 
 			case "special_best_data":
-			$header_output .= ": ".$label_admin_custom_cat_date;
+			$header_output .= ": ".$label_admin_custom_cat_data;
 			break;
 
 			case "sponsors":
@@ -574,7 +575,7 @@ switch($section) {
 			case "change_user_password":
 			$header_output .= ": ".$label_admin_password;
 			break;
-			
+
 			case "payments":
 			$header_output .= ": ".$label_admin_payments;
 			break;
@@ -634,6 +635,7 @@ switch($section) {
 	elseif ($msg == "34") $output = sprintf("<strong>%s</strong>",$header_text_110);
 	elseif ($msg == "35") $output = sprintf("<strong>%s</strong>",$header_text_111);
 	elseif ($msg == "36") $output = sprintf("<strong>%s</strong>",$header_text_115);
+	elseif ($msg == "37") $output = sprintf("<strong>%s</strong> %s","Please Note!", "Accepted BA Styles have been cleared. Please go to Admin > Competition Preparation > Manage Styles Accepted to define your competition's accepted styles.");
 	elseif ($msg == "755") $output = sprintf("<strong>%s</strong> ",$header_text_094,$header_text_095);
 	else $output = "";
 	break;

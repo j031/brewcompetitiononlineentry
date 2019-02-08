@@ -5,8 +5,8 @@
  */
 if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ($section == "setup"))) {
 
-	$dropLocationWebsite = check_http($_POST['dropLocationWebsite']);
-	$dropLocationName = strip_tags($_POST['dropLocationName']);
+	$dropLocationWebsite = check_http(sterilize($_POST['dropLocationWebsite']));
+	$dropLocationName = sterilize($_POST['dropLocationName']);
 
 	if ($action == "add") {
 
@@ -14,10 +14,10 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 
 			$insertSQL = sprintf("INSERT INTO $drop_off_db_table (dropLocationName, dropLocation, dropLocationPhone, dropLocationWebsite, dropLocationNotes) VALUES (%s, %s, %s, %s, %s)",
 							   GetSQLValueString(capitalize($dropLocationName), "text"),
-							   GetSQLValueString(strip_tags($_POST['dropLocation']), "text"),
-							   GetSQLValueString($_POST['dropLocationPhone'], "text"),
+							   GetSQLValueString(sterilize($_POST['dropLocation']), "text"),
+							   GetSQLValueString(sterilize($_POST['dropLocationPhone']), "text"),
 							   GetSQLValueString(strtolower($dropLocationWebsite), "text"),
-							   GetSQLValueString(strip_tags($_POST['dropLocationNotes']), "text")
+							   GetSQLValueString(sterilize($_POST['dropLocationNotes']), "text")
 							   );
 
 			mysqli_real_escape_string($connection,$insertSQL);
@@ -37,32 +37,33 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 
 		}
 
-		else $insertGoTo = $insertGoTo;
+		else $insertGoTo = $base_url."index.php?section=admin&go=dropoff&msg=1";
 		$pattern = array('\'', '"');
 		$insertGoTo = str_replace($pattern, "", $insertGoTo);
-		header(sprintf("Location: %s", stripslashes($insertGoTo)));
+		$redirect_go_to = sprintf("Location: %s", stripslashes($insertGoTo));
 
 	}
 
 	if ($action == "edit") {
 		$updateSQL = sprintf("UPDATE $drop_off_db_table SET dropLocationName=%s, dropLocation=%s, dropLocationPhone=%s, dropLocationWebsite=%s, dropLocationNotes=%s WHERE id=%s",
 						   GetSQLValueString(capitalize($dropLocationName), "text"),
-						   GetSQLValueString(strip_tags($_POST['dropLocation']), "text"),
-						   GetSQLValueString($_POST['dropLocationPhone'], "text"),
+						   GetSQLValueString(sterilize($_POST['dropLocation']), "text"),
+						   GetSQLValueString(sterilize($_POST['dropLocationPhone']), "text"),
 						   GetSQLValueString(strtolower($dropLocationWebsite), "text"),
-						   GetSQLValueString(strip_tags($_POST['dropLocationNotes']), "text"),
+						   GetSQLValueString(sterilize($_POST['dropLocationNotes']), "text"),
 						   GetSQLValueString($id, "int"));
 
 		mysqli_real_escape_string($connection,$updateSQL);
 		$result = mysqli_query($connection,$updateSQL) or die (mysqli_error($connection));
 
+		$updateGoTo = $base_url."index.php?section=admin&go=dropoff&msg=2";
+
 		$pattern = array('\'', '"');
 		$updateGoTo = str_replace($pattern, "", $updateGoTo);
-		header(sprintf("Location: %s", stripslashes($updateGoTo)));
+		$redirect_go_to = sprintf("Location: %s", stripslashes($updateGoTo));
 	}
 
 } else {
-	header(sprintf("Location: %s", $base_url."index.php?msg=98"));
-	exit;
+	$redirect_go_to = sprintf("Location: %s", $base_url."index.php?msg=98");
 }
 ?>

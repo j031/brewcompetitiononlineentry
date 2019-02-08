@@ -1,14 +1,14 @@
-<?php 
+<?php
 // Rebuild 04.27.17
 
 include (DB.'styles.db.php');
 include (DB.'admin_judging_tables.db.php');
 
 if (strpos($section, "step") === FALSE) {
-	
+
     if ($_SESSION['jPrefsQueued'] == "N") $assign_to = "Flights";
     else $assign_to = "Tables";
-	
+
 }
 
 // Title Vars
@@ -40,45 +40,81 @@ $manage_tables_default_tbody = "";
 $bos_modal_body = "";
 $orphan_modal_body_1 = "";
 $orphan_modal_body_2 = "";
+$style_assigned_this = "";
+$all_loc_total = array();
 
 if (($action == "default") && ($filter == "default")) {
 
+	// Orphans styles not assigned to tables yet
+
+	if ($totalRows_tables > 0) {
+
+		$a[] = array();
+		$y[] = array();
+		$z[] = 0;
+
+		do {
+			if (get_table_info($row_styles['brewStyleNum']."^".$row_styles['brewStyleGroup'],"count","default","default","default")) {
+				if (!get_table_info($row_styles['id'],"styles","default","default","default")) {
+					$a[] = $row_styles['id'];
+					$z[] = 1;
+                    $orphan_modal_body_2 .= "<li>";
+                    if ($_SESSION['prefsStyleSet'] == "BA") $orphan_modal_body_2 .= $row_styles['brewStyleCategory'].": ";
+                    else $orphan_modal_body_2 .= $row_styles['brewStyleGroup'].$row_styles['brewStyleNum']." ".style_convert($row_styles['brewStyleGroup'],"1").": ";
+                    $orphan_modal_body_2 .= $row_styles['brewStyle']." (".get_table_info($row_styles['brewStyleNum']."^".$row_styles['brewStyleGroup'],"count","default",$dbTable,"default")." entries)";
+					$orphan_modal_body_2 .= "</li>";
+				}
+			}
+		} while ($row_styles = mysqli_fetch_assoc($styles));
+
+        $b = array_sum($z);
+        if ($b == 0) $orphan_modal_body_1 .= "<p>All styles with entries have been assigned to tables.</p>";
+        else $orphan_modal_body_1 .= "<p>The following styles with entries have not been assigned to tables:</p>";
+
+    } // end if ($totalRows_tables > 0)
+
+    else {
+        $orphan_modal_body_1 .= "<p>No tables have been defined.";
+        if ($go == "judging_tables") $orphan_modal_body_1 .= " <a href='index.php?section=admin&amp;go=judging_tables&amp;action=add'>Add a table?</a>";
+        $orphan_modal_body_1 .= "</p>";
+    } // end else
+
     $manage_tables_default = TRUE;
     $sub_lead_text .= "<p>To ensure accuracy, verify that all paid and received entries have been marked as such via the <a href=\"".$base_url."index.php?section=admin&amp;go=entries\">Manage Entries</a> screen.</p>";
-	
+
 	if ($totalRows_tables_edit > 0) {
- 
+
 		do {
-	
+
 			$flight_count = table_choose($section,$go,$action,$row_tables_edit['id'],$view,"default","flight_choose");
 			$flight_count = explode("^",$flight_count);
-	
-			$flight_choose .= "<option value=\"".$base_url;
-			$flight_choose .= "index.php?section=admin&amp;go=judging_flights&amp;action=";
+
+			$flight_choose .= "<li class=\"small\"><a href=\"".$base_url;
+			$flight_choose .= "index.php?section=admin&amp;go=judging_flights&amp;filter=define&amp;action=";
 			if ($flight_count[0] > 0) $flight_choose .= "edit";
 			else $flight_choose .= "add";
 			$flight_choose .= "&amp;id=".$row_tables_edit['id']."\">";
 			$flight_choose .= "#".$row_tables_edit['tableNumber'].": ".$row_tables_edit['tableName'];
-			$flight_choose .= "</option>";
-	
+			$flight_choose .= "</a></li>";
+
 			$score_count = table_count_total($row_tables_edit['id']);
-			$score_choose .= "<option value=\"".$base_url;
+			$score_choose .= "<li class=\"small\"><a href=\"".$base_url;
 			$score_choose .= "index.php?section=admin&amp;go=judging_scores&amp;action=";
 			if ($score_count  > 0) $score_choose .= "edit";
 			else $score_choose .= "add";
 			$score_choose .= "&amp;id=".$row_tables_edit['id']."\">";
 			$score_choose .= "#".$row_tables_edit['tableNumber'].": ".$row_tables_edit['tableName'];
-			$score_choose .= "</option>";
-	
+			$score_choose .= "</a></li>";
+
 		} while ($row_tables_edit = mysqli_fetch_assoc($tables_edit));
-	
+
 	}
-	
+
 	else {
-		
-		$score_choose .= "<option disabled>No tables have been defined.</option>";
-		$flight_choose .= "<option disabled>No tables have been defined.</option>";
-		
+
+		$score_choose .= "<li class=\"small\"><a class=\"disabled\">No tables have been defined.</a></li>";
+		$flight_choose .= "<li class=\"small\"><a class=\"disabled\">No tables have been defined.</a></li>";
+
 	}
 
     do {
@@ -95,13 +131,13 @@ if (($action == "default") && ($filter == "default")) {
             $style_types_list .= "</li>";
 
         }
-		
+
 		else {
-			
+
 			$style_types_list .= "<li>";
            	$style_types_list .= "BOS Places - ".$row_style_types['styleTypeName']." [Disabled]";
             $style_types_list .= "</li>";
-			
+
 		}
 
     } while ($row_style_types = mysqli_fetch_assoc($style_types));
@@ -159,8 +195,13 @@ if (($action == "default") && ($filter == "default")) {
             $manage_tables_default_tbody .= "</a> ";
 
             // Build print pullsheet link
-            $manage_tables_default_tbody .= "<a id=\"modal_window_link\" href=\"".$base_url."output/print.output.php?section=pullsheets&amp;go=judging_tables&amp;id=".$row_tables['id']."\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Print the pullsheet for Table ".$row_tables['tableNumber'].": ".$row_tables['tableName']."\">";
+            $manage_tables_default_tbody .= "<a id=\"modal_window_link\" class=\"hide-loader\" href=\"".$base_url."output/print.output.php?section=pullsheets&amp;go=judging_tables&amp;id=".$row_tables['id']."\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Print the pullsheet for Table ".$row_tables['tableNumber'].": ".$row_tables['tableName']."\">";
             $manage_tables_default_tbody .= "<span class=\"fa fa-lg fa-print\"></span>";
+            $manage_tables_default_tbody .= "</a> ";
+
+            // Build print pullsheet link
+            $manage_tables_default_tbody .= "<a id=\"modal_window_link\" class=\"hide-loader\" href=\"".$base_url."output/print.output.php?section=pullsheets&amp;go=all_entry_info&amp;id=".$row_tables['id']."\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Print the Entries with Additional Info Report for Table ".$row_tables['tableNumber'].": ".$row_tables['tableName']."\">";
+            $manage_tables_default_tbody .= "<span class=\"fa fa-lg fa-plus-square\"></span>";
             $manage_tables_default_tbody .= "</a> ";
 
             // Build flight link
@@ -176,8 +217,8 @@ if (($action == "default") && ($filter == "default")) {
             $manage_tables_default_tbody .= "</a> ";
 
             // Build delete link
-            $manage_tables_default_tbody .= "<a href=\"".$base_url;
-            $manage_tables_default_tbody .= "includes/process.inc.php?section=".$section."&amp;go=".$go."&amp;filter=".$filter."&amp;dbTable=".$judging_tables_db_table."&amp;action=delete&amp;id=".$row_tables['id']."\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Delete Table ".$row_tables['tableNumber'].": ".$row_tables['tableName']." data-confirm=\"Are you sure you want to delete Table ".$row_tables['tableNumber'].": ".$row_tables['tableName']."? ALL associated FLIGHTS and SCORES will be deleted as well. This cannot be undone.\">";
+            $manage_tables_default_tbody .= "<a class=\"hide-loader\" href=\"".$base_url;
+            $manage_tables_default_tbody .= "includes/process.inc.php?section=".$section."&amp;go=".$go."&amp;filter=".$filter."&amp;dbTable=".$judging_tables_db_table."&amp;action=delete&amp;id=".$row_tables['id']."\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Delete Table ".$row_tables['tableNumber'].": ".$row_tables['tableName']."\" data-confirm=\"Are you sure you want to delete Table ".$row_tables['tableNumber'].": ".$row_tables['tableName']."? ALL associated FLIGHTS and SCORES will be deleted as well. This cannot be undone.\">";
             $manage_tables_default_tbody .= "<span class=\"fa fa-lg fa-trash-o\"></span>";
             $manage_tables_default_tbody .= "</a> ";
             $manage_tables_default_tbody .= "</td>";
@@ -197,82 +238,16 @@ if (($action == "default") && ($filter == "default")) {
 
     } while ($row_style_type = mysqli_fetch_assoc($style_type));
 
-    if ($totalRows_tables > 0) {
-		
-		$a[] = "";
-		$y[] = "";
-		$z[] = 0;
-			
-        if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
-			
-			// Get custom style ids
-			if ($totalRows_styles_custom > 0) {
-				do {
-					if (get_table_info($row_styles_custom['brewStyleNum']."^".$row_styles_custom['brewStyleGroup'],"count","",$dbTable,"default")) {
-						
-						$a[] = $row_styles_custom['id']."c"; // Need to add differentiator for custom styles
-						$y[] = $row_styles_custom['id']."^".$row_styles_custom['brewStyle']."^Custom";
-						
-						if (!get_table_info($row_styles_custom['id'],"styles","default","default","default")) {
-							$z[] = 1;
-							$orphan_modal_body_2 .= "<li>".$row_styles_custom['brewStyleGroup'].$row_styles_custom['brewStyleNum']." ".style_convert($row_styles_custom['brewStyleGroup'],"1").": ".$row_styles_custom['brewStyle']." (".get_table_info($row_styles_custom['brewStyleNum']."^".$row_styles_custom['brewStyleGroup'],"count","default",$dbTable,"default")." entries)</li>";
-						}
-					}
-				} while ($row_styles_custom = mysqli_fetch_assoc($styles_custom));
-			}
-			
-			// Get BA style ids
-            foreach ($_SESSION['styles'] as $ba_styles => $stylesData) {
-                if (is_array($stylesData) || is_object($stylesData)) {
-                    foreach ($stylesData as $key => $ba_style) {
-                        $style_value = $ba_style['category']['id']."^".$ba_style['id'];
-                        if (get_table_info($style_value,"count","default",$dbTable,"default")) {
-							
-							$a[] = $ba_style['id'];
-							$y[] = $ba_style['id']."^".$ba_style['name']."^".$ba_style['category']['name'];
-							
-                            if (!get_table_info($ba_style['id'],"styles","default","default","default")) {
-                                $z[] = 1;
-                                $orphan_modal_body_2 .= "<li>".$ba_style['name']." (".get_table_info($style_value,"count","default",$dbTable,"default")." entries)</li>";
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            do {
-                if (get_table_info($row_styles['brewStyleNum']."^".$row_styles['brewStyleGroup'],"count","","default","default")) {
-                    if (!get_table_info($row_styles['id'],"styles","styles","default","default","default")) {
-                        $a[] = $row_styles['id'];
-						$z[] = 1;
-                        $orphan_modal_body_2 .= "<li>".$row_styles['brewStyleGroup'].$row_styles['brewStyleNum']." ".style_convert($row_styles['brewStyleGroup'],"1").": ".$row_styles['brewStyle']." (".get_table_info($row_styles['brewStyleNum']."^".$row_styles['brewStyleGroup'],"count","default",$dbTable,"default")." entries)</li>";
-                    }
-                }
-            } while ($row_styles = mysqli_fetch_assoc($styles));
-        }
-
-        $b = array_sum($z);
-        if ($b == 0) $orphan_modal_body_1 .= "<p>All styles with entries have been assigned to tables.</p>";
-        else $orphan_modal_body_1 .= "<p>The following styles with entries have not been assigned to tables:</p>";
-		
-    } // end if ($totalRows_tables > 0)
-
-    else {
-        $orphan_modal_body_1 .= "<p>No tables have been defined.";
-        if ($go == "judging_tables") $orphan_modal_body_1 .= " <a href='index.php?section=admin&amp;go=judging_tables&amp;action=add'>Add a table?</a>";
-        $orphan_modal_body_1 .= "</p>";
-    } // end else
-
 } // end if (($action == "default") && ($dbTable == "default"))
 
 
 if (($action == "add") || ($action == "edit")) {
 
     $all_table_styles_concat = "";
-    $all_table_numbers_array = "";
-    $all_table_styles_array = "";
+    $all_table_numbers_array = array();
+    $all_table_styles_array = array();
     $table_styles_available = "";
-	$current_table_styles_array = "";
+	$current_table_styles_array = array();
     $table_numbers_available = "";
     $table_locations_available = "";
     $table_numbers = "";
@@ -282,19 +257,19 @@ if (($action == "add") || ($action == "edit")) {
 
         do {
             $table_numbers[] = $row_table_number['tableNumber'];
-        } while($row_table_number = mysqli_fetch_assoc($table_number)); 
-    
+        } while($row_table_number = mysqli_fetch_assoc($table_number));
+
     }
     */
-	
+
 	if ($action == "edit") {
-		
+
 		$query_current_table_styles = sprintf("SELECT * FROM %s WHERE id='%s'",$judging_tables_db_table,$id);
 		$current_table_styles = mysqli_query($connection,$query_current_table_styles) or die (mysqli_error($connection));
 		$row_current_table_styles = mysqli_fetch_assoc($current_table_styles);
-		
+
 		$current_table_styles_array = explode(",",$row_current_table_styles['tableStyles']);
-		
+
 	}
 
     $query_all_table_styles = sprintf("SELECT * FROM %s",$judging_tables_db_table);
@@ -302,241 +277,106 @@ if (($action == "add") || ($action == "edit")) {
     $row_all_table_styles = mysqli_fetch_assoc($all_table_styles);
     $totalRows_all_table_styles = mysqli_num_rows($all_table_styles);
 
+    // Get the table numbers and sub-style ids from the tables that have been defined and put into arrays
     if ($totalRows_all_table_styles > 0) {
 
-        do { 
+        do {
             $all_table_styles_concat .= $row_all_table_styles['tableStyles'].",";
             $all_table_numbers_array[] =  $row_all_table_styles['tableNumber'];
         } while ($row_all_table_styles = mysqli_fetch_assoc($all_table_styles));
-        
+
         $all_table_styles_concat = rtrim($all_table_styles_concat,",");
         $all_table_styles_array = explode(",",$all_table_styles_concat);
 
     }
 
-    for($i=1; $i<=75; $i++) {
-		
+    // Build the table number values for drop-down
+    // Disable those already used
+    for($i=1; $i<=100; $i++) {
+
 		$selected_table_number = "";
 		$disabled_table_number = "";
         if (($action == "edit") && ($row_tables_edit['tableNumber'] == $i)) $selected_table_number = " SELECTED";
         elseif ((is_array($all_table_numbers_array)) && (in_array($i,$all_table_numbers_array))) $disabled_table_number = " DISABLED";
-        
+
 		$table_numbers_available .= "<option value=\"".$i."\"";
         $table_numbers_available .= $selected_table_number;
         $table_numbers_available .= $disabled_table_number;
         $table_numbers_available .= ">";
         $table_numbers_available .= $i;
         $table_numbers_available .= "</option>\n";
-		
+
     }
 
+    // Build location drop-down
     do {
-		
+
 		$selected_table_location = "";
 		$disabled_table_location = "";
-		
-		
+
         if (($action == "edit") && ($row_tables_edit['tableLocation'] == $row_judging['id'])) $selected_table_location = " SELECTED";
         $table_locations_available .= "<option value=\"".$row_judging['id']."\"".$selected_table_location.">";
         $table_locations_available .= $row_judging['judgingLocName']." (".getTimeZoneDateTime($_SESSION['prefsTimeZone'], $row_judging['judgingDate'], $_SESSION['prefsDateFormat'],  $_SESSION['prefsTimeFormat'], "short", "date-time-no-gmt").")";
         $table_locations_available .= "</option>\n";
-		
-    } while ($row_judging = mysqli_fetch_assoc($judging));
-    
-    // BJCP Styles
 
-    if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) {
-        
-        do { 
-            
-            $style_value = $row_styles['brewStyleNum']."^".$row_styles['brewStyleGroup'];
-			$received_entry_count_style = get_table_info($style_value,"count","default",$dbTable,"default");
-			$table_row_class = "";
-			$style_assigned_location = "";
-			$style_no_entries = "";
-			$disabled_styles = "";
-			$selected_styles = "";
-			$table_row_class = "bg-success text-success";
-			
-			$show = get_table_info($row_styles['id'],"styles","default",$dbTable,"default");
-			
-			if ($received_entry_count_style == 0) {
-				$disabled_styles = "DISABLED";
-				$style_no_entries = "<br><em>Disabled. No entries were received for this style.</em>";
-				$table_row_class = "bg-grey text-muted";
-			}
-			
-			if (($action == "edit") && (in_array($row_styles['id'],$current_table_styles_array))) $style_assigned_location = "<br><em>Style currently assigned to this table.</em>";
-			else $style_assigned_location = get_table_info($row_styles['id'],"assigned","default",$dbTable,"default");
-			
-			if (!empty($style_assigned_location)) {
-				$table_row_class = "bg-danger";
-				$disabled_styles = "DISABLED";
-			}
-			
-			if ($action == "edit") {
-			
-				$style_assigned_this = get_table_info($row_styles['id'],"styles",$row_tables_edit['id'],$dbTable,"default");
-				if (in_array($row_styles['id'],$all_table_styles_array)) $disabled_styles = "DISABLED";
-				if (in_array($row_styles['id'],$current_table_styles_array)) $disabled_styles = "";
-				if ($style_assigned_this) {
-					$table_row_class = "bg-warning";
-					$selected_styles = "CHECKED";
-				}
-			
-			}
-			
-			$disabled_selected_styles = $selected_styles." ".$disabled_styles;
-			
-			if ((($action == "add") && (!$show)) || ($action == "edit")) {
-			
-				$table_styles_available .= "<tr class=\"".$table_row_class."\">";
-				$table_styles_available .= "<td><input type=\"checkbox\" name=\"tableStyles[]\" value=\"".$row_styles['id']."\" ".$disabled_selected_styles."></td>";
-				$table_styles_available .= "<td>".$row_styles['brewStyleGroup'].$row_styles['brewStyleNum']."</td>";
-				$table_styles_available .= "<td>".style_convert($row_styles['brewStyleGroup'],"1")."</td>";
-				$table_styles_available .= "<td>".$row_styles['brewStyle'].$style_no_entries.$style_assigned_location."</td>";
-				$table_styles_available .= "<td>".$received_entry_count_style."</td>";
-				$table_styles_available .= "</tr>";
-			
-			}
-            
-        } while ($row_styles = mysqli_fetch_assoc($styles));
-    
-    }
-    
-    if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
-		
-		if ($totalRows_styles_custom > 0) {
-			
-			do {
-				
-				$style_value = $row_styles_custom['brewStyleNum']."^".$row_styles_custom['brewStyleGroup']."^Custom";
-				$received_entry_count_style = get_table_info($style_value,"count","default",$dbTable,"default");
-				$table_row_class = "";
-				$style_assigned_location = "";
-				$style_no_entries = "";
-				$disabled_styles = "";
-				$selected_styles = "";
-				$table_row_class = "bg-success text-success";
-				
-				$show = get_table_info($row_styles_custom['id'],"styles","default",$dbTable,"default");
-				
-				if ($received_entry_count_style == 0) {
-					$disabled_styles = "DISABLED";
-					$style_no_entries = "<br><em>Disabled. No entries were received for this style.</em>";
-					$table_row_class = "bg-grey text-muted";
-				}
-				
-				if (($action == "edit") && (in_array($row_styles_custom['id'],$current_table_styles_array))) $style_assigned_location = "<br><em>Style currently assigned to this table.</em>";
-				else $style_assigned_location = get_table_info($row_styles_custom['id'],"assigned","default",$dbTable,"default");
-				
-				if (!empty($style_assigned_location)) {
-					$table_row_class = "bg-danger";
-					$disabled_styles = "DISABLED";
-				}
-				
-				if ($action == "edit") {
-				
-					$style_assigned_this = get_table_info($row_styles_custom['id'],"styles",$row_tables_edit['id'],$dbTable,"default");
-					if (in_array($row_styles_custom['id'],$all_table_styles_array)) $disabled_styles = "DISABLED";
-					if (in_array($row_styles_custom['id'],$current_table_styles_array)) $disabled_styles = "";
-					if ($style_assigned_this) {
-						$table_row_class = "bg-warning";
-						$selected_styles = "CHECKED";
-					}
-				
-				}
-				
-				$disabled_selected_styles = $selected_styles." ".$disabled_styles;
-				
-				if ((($action == "add") && (!$show)) || ($action == "edit")) {
-				
-					$table_styles_available .= "<tr class=\"".$table_row_class."\">";
-					$table_styles_available .= "<td><input type=\"checkbox\" name=\"tableStyles[]\" value=\"".$row_styles_custom['id']."\"".$disabled_selected_styles."></td>";
-					$table_styles_available .= "<td>Custom</td>";
-					$table_styles_available .= "<td>".$row_styles_custom['brewStyle'].$style_no_entries.$style_assigned_location."</td>";
-					$table_styles_available .= "<td>".$received_entry_count_style."</td>";
-					$table_styles_available .= "</tr>";
-				
-				}
-				
-			} while ($row_styles_custom = mysqli_fetch_assoc($styles_custom));
+    } while ($row_judging = mysqli_fetch_assoc($judging));
+
+
+    do {
+
+        $style_value = $row_styles['brewStyleNum']."^".$row_styles['brewStyleGroup'];
+		$received_entry_count_style = get_table_info($style_value,"count","default",$dbTable,"default");
+		$table_row_class = "";
+		$style_assigned_location = "";
+		$style_no_entries = "";
+		$disabled_styles = "";
+		$selected_styles = "";
+		$table_row_class = "bg-success text-success";
+
+		if ($received_entry_count_style == 0) {
+			$disabled_styles = "DISABLED";
+			$style_no_entries = "<br><em>Disabled. No entries were received for this style.</em>";
+			$table_row_class = "bg-grey text-muted";
 		}
-		
-		foreach ($_SESSION['styles'] as $ba_styles => $stylesData) {
-                
-            if (is_array($stylesData) || is_object($stylesData)) {
-                
-                foreach ($stylesData as $key => $ba_style) { 
-                    
-                    $style_value = $ba_style['category']['id']."^".$ba_style['id'];
-                    $received_entry_count_style = get_table_info($style_value,"count","default",$dbTable,"default");
-                    $table_row_class = "";
-                    $style_assigned_location = "";
-					$style_no_entries = "";
-					$disabled_ba_styles = "";
-                    $selected_ba_styles = "";
-					$table_row_class = "bg-success text-success";
-                    
-                    if ($ba_style['category']['name'] == "Hybrid/mixed Beer") $categoryName = "Hybrid/Mixed Beer"; 
-                    elseif ($ba_style['category']['name'] == "European-germanic Lager") $categoryName = "European-Germanic Lager";
-                    else $categoryName = ucwords($ba_style['category']['name']);
-                    
-                    $show = get_table_info($ba_style['id'],"styles","default",$dbTable,"default");
-                
-					if ($received_entry_count_style == 0) {
-						$disabled_ba_styles = "DISABLED";
-						$style_no_entries = "<br><em>Disabled. No entries were received for this style.</em>";
-						$table_row_class = "bg-grey text-muted";
-					}
-					
-					if (($action == "edit") && (in_array($ba_style['id'],$current_table_styles_array))) $style_assigned_location = "<br><em>Style currently assigned to this table.</em>";
-					// else $style_assigned_location = get_table_info($ba_style['id'],"assigned","default",$dbTable,"default");
-					
-					if (!empty($style_assigned_location)) { 
-						$table_row_class = "bg-danger";
-						$disabled_ba_styles = "DISABLED";
-					}
-					
-					if ((is_array($all_table_styles_array)) && (in_array($ba_style['id'],$all_table_styles_array))) {
-						$style_assigned_location = get_table_info($ba_style['id'],"assigned","default",$dbTable,"default");
-						$table_row_class = "bg-danger";
-						$disabled_ba_styles = "DISABLED";
-					}
-					
-					if ($action == "edit") {
-						
-						$style_assigned_this = get_table_info($ba_style['id'],"styles",$row_tables_edit['id'],$dbTable,"default");
-					
-						if (in_array($ba_style['id'],$current_table_styles_array)) $disabled_ba_styles = "";
-						if ($style_assigned_this) { 
-							$table_row_class = "bg-warning";
-							$selected_ba_styles = "CHECKED";
-						}
-						
-					}
-					
-					$disabled_selected_ba_styles = $selected_ba_styles." ".$disabled_ba_styles;
-					
-					if ((($action == "add") && (!$show)) || ($action == "edit")) {
-					
-						$table_styles_available .= "<tr class=\"".$table_row_class."\">\n"; 
-						$table_styles_available .= "<td><input type=\"checkbox\" name=\"tableStyles[]\" value=\"".$ba_style['id']."\" ".$disabled_selected_ba_styles."></td>\n";
-						$table_styles_available .= "<td>".$categoryName."</td>";
-						$table_styles_available .= "<td>".$ba_style['name'].$style_no_entries.$style_assigned_location."</td>\n";
-						$table_styles_available .= "<td>".$received_entry_count_style."</td>\n";
-						$table_styles_available .= "</tr>\n";
-					
-					}
-                
-                } // end foreach ($stylesData as $data => $ba_style)
-                
-            } // end if (is_array($stylesData) || is_object($stylesData))
-            
-        } // end foreach ($_SESSION['styles'] as $styles => $stylesData)
-        
-    }
-	
+
+		if (($action == "edit") && (in_array($row_styles['id'],$current_table_styles_array))) $style_assigned_location = "<br><em>Style currently assigned to this table.</em>";
+		else $style_assigned_location = get_table_info($row_styles['id'],"assigned","default",$dbTable,"default");
+
+		if (!empty($style_assigned_location)) {
+			$table_row_class = "bg-danger";
+			$disabled_styles = "DISABLED";
+		}
+
+		if ($action == "edit")  $style_assigned_this = get_table_info($row_styles['id'],"styles",$row_tables_edit['id'],$dbTable,"default");
+        if ((is_array($all_table_styles_array)) && (in_array($row_styles['id'],$all_table_styles_array))) $disabled_styles = "DISABLED";
+        if ((is_array($current_table_styles_array)) && (in_array($row_styles['id'],$current_table_styles_array))) $disabled_styles = "";
+        if ($style_assigned_this) {
+            $table_row_class = "bg-warning";
+            $selected_styles = "CHECKED";
+        }
+
+		$disabled_selected_styles = $selected_styles." ".$disabled_styles;
+
+		$table_styles_available .= "<tr class=\"".$table_row_class."\">";
+		$table_styles_available .= "<td><input type=\"checkbox\" name=\"tableStyles[]\" value=\"".$row_styles['id']."\" ".$disabled_selected_styles."></td>";
+
+        if ($_SESSION['prefsStyleSet'] == "BA") {
+            if (empty($row_styles['brewStyleCategory'])) $ba_category = "Custom";
+            else $ba_category = $row_styles['brewStyleCategory'];
+            $table_styles_available .= "<td>".$ba_category."</td><td>".$row_styles['brewStyle'].$style_no_entries.$style_assigned_location."</td>";
+        }
+		else {
+            $table_styles_available .= "<td>".$row_styles['brewStyleGroup'].$row_styles['brewStyleNum']."</td>";
+            $table_styles_available .= "<td>".style_convert($row_styles['brewStyleGroup'],"1")."</td>";
+            $table_styles_available .= "<td>".$row_styles['brewStyle'].$style_no_entries.$style_assigned_location."</td>";
+        }
+		$table_styles_available .= "<td>".$received_entry_count_style."</td>";
+		$table_styles_available .= "</tr>";
+
+    } while ($row_styles = mysqli_fetch_assoc($styles));
+
+
+
 } // end if (($action == "add") || ($action == "edit"))
 ?>
 <p class="lead"><?php echo $_SESSION['contestName'].$title;  ?></p>
@@ -564,14 +404,14 @@ if (($action == "add") || ($action == "edit")) {
 	<!-- View Button Group Dropdown -->
     <div class="btn-group" role="group">
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <span class="fa fa-eye"></span> View...   
+        <span class="fa fa-eye"></span> View...
         <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
-            <li class="small"><a id="modal_window_link" href="<?php echo $base_url; ?>output/print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=judges&amp;view=name&amp;tb=view" title="View Assignments by Name">Judge Assignments By Last Name</a></li>
-            <li class="small"><a id="modal_window_link" href="<?php echo $base_url; ?>output/print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=judges&amp;view=table&amp;tb=view" title="View Assignments by Table">Judge Assignments By Table</a></li>
-            <li class="small"><a id="modal_window_link" href="<?php echo $base_url; ?>output/print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=stewards&amp;view=name&amp;tb=view" title="View Assignments by Name">Steward Assignments By Last Name</a></li>
-            <li class="small"><a id="modal_window_link" href="<?php echo $base_url; ?>output/print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=stewards&amp;view=table&amp;tb=view" title="View Assignments by Table">Steward Assignments By Table</a></li>
+            <li class="small"><a id="modal_window_link" class="hide-loader" href="<?php echo $base_url; ?>output/print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=judges&amp;view=name&amp;tb=view" title="View Assignments by Name">Judge Assignments By Last Name</a></li>
+            <li class="small"><a id="modal_window_link" class="hide-loader" href="<?php echo $base_url; ?>output/print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=judges&amp;view=table&amp;tb=view" title="View Assignments by Table">Judge Assignments By Table</a></li>
+            <li class="small"><a id="modal_window_link" class="hide-loader" href="<?php echo $base_url; ?>output/print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=stewards&amp;view=name&amp;tb=view" title="View Assignments by Name">Steward Assignments By Last Name</a></li>
+            <li class="small"><a id="modal_window_link" class="hide-loader" href="<?php echo $base_url; ?>output/print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=stewards&amp;view=table&amp;tb=view" title="View Assignments by Table">Steward Assignments By Table</a></li>
             <li class="small"><a href="#" data-toggle="modal" data-target="#availJudgeModal">Judges Not Assigned to a Table</a></li>
             <li class="small"><a href="#" data-toggle="modal" data-target="#availStewardModal">Stewards Not Assigned to a Table</a></li>
         </ul>
@@ -580,21 +420,21 @@ if (($action == "add") || ($action == "edit")) {
 	<!-- Postion 4: Print Button Dropdown Group -->
     <div class="btn-group hidden-xs hidden-sm" role="group">
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <span class="fa fa-print"></span> Print...   
+        <span class="fa fa-print"></span> Print...
         <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
-            <li class="small"><a href="javascript:window.print()">Tables List</a></li>
-    		<li class="small"><a id="modal_window_link" href="<?php echo $base_url; ?>output/print.output.php?section=pullsheets&amp;go=judging_tables&amp;id=default">Pullsheets by Table</a></li>
-            <li class="small"><a id="modal_window_link" href="<?php echo $base_url; ?>output/print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=judges&amp;view=name" title="Print Judge Assignments by Name">Judge Assignments By Last Name</a></li>
-			<li class="small"><a id="modal_window_link" href="<?php echo $base_url; ?>output//print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=judges&amp;view=table" title="Print Judge Assignments by Table">Judge Assignments By Table</a></li>
+            <li class="small"><a class="hide-loader" href="javascript:window.print()">Tables List</a></li>
+    		<li class="small"><a id="modal_window_link" class="hide-loader" href="<?php echo $base_url; ?>output/print.output.php?section=pullsheets&amp;go=judging_tables&amp;id=default">Pullsheets by Table</a></li>
+            <li class="small"><a id="modal_window_link" class="hide-loader" href="<?php echo $base_url; ?>output/print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=judges&amp;view=name" title="Print Judge Assignments by Name">Judge Assignments By Last Name</a></li>
+			<li class="small"><a id="modal_window_link" class="hide-loader" href="<?php echo $base_url; ?>output//print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=judges&amp;view=table" title="Print Judge Assignments by Table">Judge Assignments By Table</a></li>
    			<?php if ($totalRows_judging > 1) { ?>
-			<li class="small"><a id="modal_window_link" href="<?php echo $base_url; ?>output//print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=judges&amp;view=location" title="Print Judge Assignments by Location">Judge Assignments By Location</a></li>
+			<li class="small"><a id="modal_window_link" class="hide-loader" href="<?php echo $base_url; ?>output//print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=judges&amp;view=location" title="Print Judge Assignments by Location">Judge Assignments By Location</a></li>
     		<?php } ?>
-            <li class="small"><a id="modal_window_link" href="<?php echo $base_url; ?>output//print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=stewards&amp;view=name" title="Print Steward Assignments by Name">Steward Assignments By Last Name</a></li>
-			<li class="small"><a id="modal_window_link" href="<?php echo $base_url; ?>output//print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=stewards&amp;view=table" title="Print Steward Assignments by Table">Steward Assignments By Table</a></li>
+            <li class="small"><a id="modal_window_link" class="hide-loader" href="<?php echo $base_url; ?>output//print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=stewards&amp;view=name" title="Print Steward Assignments by Name">Steward Assignments By Last Name</a></li>
+			<li class="small"><a id="modal_window_link" class="hide-loader" href="<?php echo $base_url; ?>output//print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=stewards&amp;view=table" title="Print Steward Assignments by Table">Steward Assignments By Table</a></li>
    			<?php if ($totalRows_judging > 1) { ?>
-			<li class="small"><a id="modal_window_link" href="<?php echo $base_url; ?>output//print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=stewards&amp;view=location" title="Print Steward Assignments by Location">Steward Assignments By Location</a></li>
+			<li class="small"><a id="modal_window_link" class="hide-loader" href="<?php echo $base_url; ?>output//print.output.php?section=assignments&amp;go=judging_assignments&amp;filter=stewards&amp;view=location" title="Print Steward Assignments by Location">Steward Assignments By Location</a></li>
     		<?php } ?>
         </ul>
     </div>
@@ -718,16 +558,18 @@ $(document).ready(function() {
 							<div class="panel-body">
                             	<div class="row">
                                 	<div class="col col-lg-8 col-md-12 col-sm-12 col-xs-12">
-                                     <?php if ($_SESSION['jPrefsQueued'] == "N") { ?>
-                                        <select class="selectpicker" name="tables" id="tables" onchange="jumpMenu('self',this,0)" data-size="10" data-width="auto">
-                                        <option value="" selected disabled>For Table...</option>
-                                         <?php echo $flight_choose; ?>
-                                        </select>
-                                     <?php } else { ?>
-                                        <ul class="list-unstyled">
-											<li>Disabled... Queued judging selected</li>
-                                    	</ul>
-                                   	<?php } ?>
+                                        <?php if ($_SESSION['jPrefsQueued'] == "N") { ?>
+                                        <div class="btn-group" role="group" aria-label="modals">
+                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                For Table... <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <?php echo $flight_choose; ?>
+                                            </ul>
+                                        </div>
+                                        <?php } else { ?>
+                                        <p>Not needed. Using queued judging.</p>
+                                        <?php } ?>
                                 	</div>
                                 </div><!-- ./row -->
 							</div>
@@ -777,18 +619,17 @@ $(document).ready(function() {
 								<ul class="list-unstyled">
                                 	<li><a href="<?php echo $base_url; ?>index.php?section=admin&amp;go=judging_scores">All Scores</a></li>
                                 </ul>
-                            	<div class="row">
-                                	<div class="col col-lg-6 col-md-12 col-sm-12 col-xs-12">
-                                        <select class="selectpicker" name="tables" id="tables" onchange="jumpMenu('self',this,0)" data-size="10" data-width="auto">
-                                        <option value="" selected disabled>For Table...</option>
-                                            <?php echo $score_choose; ?>
-                                        </select>
-                                	</div>
-                                </div><!-- ./row -->
+                                <div class="btn-group" role="group" aria-label="modals">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        For Table... <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <?php echo $score_choose; ?>
+                                    </ul>
+                                </div>
 							</div>
 						</div>
 					</div><!-- ./accordion -->
-                    
                     <div class="panel panel-default">
 						<div class="panel-heading">
 							<h4 class="panel-title">
@@ -808,7 +649,7 @@ $(document).ready(function() {
 			</div><!-- ./row -->
 		<!-- End 2 Column Accordion -->
 	</div><!-- ./left column -->
-	
+
 	<!-- Right Column -->
 	<div class="sidebar col col-lg-3 col-md-4 col-sm-12 col-xs-12">
 		<div class="panel panel-info">
@@ -816,7 +657,7 @@ $(document).ready(function() {
             	<h4 class="panel-title">Entries Assigned to Tables</h4>
           	</div>
           	<div class="panel-body">
-            <?php if ($sidebar_entries_assigned) { echo $sidebar_assigned_entries_by_location; 
+            <?php if ($sidebar_entries_assigned) { echo $sidebar_assigned_entries_by_location;
 				if ($sidebar_all_sessions) { ?>
                 <div class="bcoem-sidebar-panel">
                 	<strong class="text-info">All Sessions</strong>
@@ -825,11 +666,11 @@ $(document).ready(function() {
                 <?php } ?>
             <?php } ?>
           	</div>
-     	</div>        
+     	</div>
     </div><!-- ./right sidebar -->
 </div><!-- ./row -->
 </div><!-- ./bcoem-admin-dashboard-accordion -->
-<?php } 
+<?php }
 if ($manage_tables_default) { ?>
 	<?php if ($dbTable == "default") { ?>
     <div class="bcoem-admin-element hidden-print">
@@ -851,14 +692,14 @@ if ($manage_tables_default) { ?>
                         <ul>
                             <li><?php if ($_SESSION['jPrefsQueued'] == "Y") echo "Queued Judging (no flights)."; else echo "Non-Queued Judging (with flights)."; ?></li>
                             <li>Maximum Rounds <?php if ($totalRows_judging > 0) echo "(per location)"; ?>: <?php echo $_SESSION['jPrefsRounds']; ?>.</li>
-                            <li>Maximum BOS Places (per style type): <?php echo $_SESSION['jPrefsMaxBOS']; ?>.</li> 
+                            <li>Maximum BOS Places (per style type): <?php echo $_SESSION['jPrefsMaxBOS']; ?>.</li>
                             <?php if ($_SESSION['jPrefsQueued'] == "N") { ?>
-                            <li>Maximum Entries per Flight: <?php echo $_SESSION['jPrefsFlightEntries']; ?>.</li> 
+                            <li>Maximum Entries per Flight: <?php echo $_SESSION['jPrefsFlightEntries']; ?>.</li>
                             <?php } ?>
                         </ul>
                     </div>
                     <div class="modal-footer">
-                        <a href="<?php echo $base_url; ?>index.php?section=admin&amp;go=judging_preferences" class="btn btn-primary">Update Preferences</a> 
+                        <a href="<?php echo $base_url; ?>index.php?section=admin&amp;go=judging_preferences" class="btn btn-primary">Update Preferences</a>
                     	<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
                     </div>
                 </div>
@@ -902,8 +743,8 @@ if ($manage_tables_default) { ?>
                 </div>
                 <div class="modal-body">
                     <?php
-                    echo $orphan_modal_body;
-                    if (!empty($orphan_modal_body_2)) echo "<ul>".$orphan_modal_body_2."</ul>"; 
+                    echo $orphan_modal_body_1;
+                    if (!empty($orphan_modal_body_2)) echo "<ul>".$orphan_modal_body_2."</ul>";
                     ?>
                 </div>
                 <div class="modal-footer">
@@ -929,7 +770,7 @@ if ($manage_tables_default) { ?>
         </div>
     </div>
 <?php } ?>
-<?php 
+<?php
 if ($totalRows_tables > 0) { ?>
 <!-- Table of Judging Tables -->
 <script>
@@ -950,12 +791,12 @@ if ($totalRows_tables > 0) { ?>
 			null,
 			null,
 			<?php if (($totalRows_judging > 1) && ($dbTable == "default"))  { ?>null,<?php } ?>
-			{ "asSorting": [  ] }				
+			{ "asSorting": [  ] }
 			]
 		} );
 	} );
 </script>
-<table class="table table-responsive table-bordered table-striped" id="judgingTables"> 
+<table class="table table-responsive table-bordered table-striped" id="judgingTables">
 	<thead>
     <tr>
     	<th class="hidden-xs hidden-sm">No.</th>
@@ -978,9 +819,9 @@ if ($totalRows_tables > 0) { ?>
     </tbody>
 </table>
 
-<?php } 
+<?php }
 else echo "<p>No tables have been defined yet.</p><p><a class=\"btn btn-primary\" role=\"button\" href=\"".$base_url."index.php?section=admin&amp;go=judging_tables&amp;action=add\"><span class=\"fa fa-plus-circle\"></span> Add a table?</a></p>";
-} // end if ($action == "default") 
+} // end if ($action == "default")
 if ($action == "add") { ?>
 <script type="text/javascript" language="javascript">
  $(document).ready(function() {
@@ -989,13 +830,12 @@ if ($action == "add") { ?>
 		"sDom": 'frt',
 		"bStateSave" : false,
 		"bLengthChange" : false,
-		<?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) { ?>"aaSorting": [[1,'asc']],<?php } ?>
-		<?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) { ?>"aaSorting": [[1,'asc'],[2,'asc']],<?php } ?>
+		"aaSorting": [[1,'asc'],[2,'asc']],
 		"bProcessing" : false,
 		"aoColumns": [
 			{ "asSorting": [  ] },
-			<?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) { ?>null,<?php } ?>
 			null,
+			<?php if ($_SESSION['prefsStyleSet'] != "BA") { ?>null,<?php } ?>
 			null,
 			null
 			]
@@ -1014,7 +854,7 @@ if ($action == "add") { ?>
             <span class="help-block with-errors"></span>
         </div>
     </div><!-- ./Form Group -->
-    
+
     <div class="form-group"><!-- Form Group NOT REQUIRED Select -->
         <label for="tableNumber" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">Number</label>
         <div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
@@ -1024,7 +864,7 @@ if ($action == "add") { ?>
         </select>
         </div>
     </div><!-- ./Form Group -->
-    
+
     <div class="form-group"><!-- Form Group NOT REQUIRED Select -->
         <label for="tableLocation" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">Location</label>
         <div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
@@ -1033,7 +873,7 @@ if ($action == "add") { ?>
             <?php echo $table_locations_available; ?>
         </select>
         </div>
-    </div><!-- ./Form Group -->    
+    </div><!-- ./Form Group -->
     <div class="form-group">
         <label for="tableStyles" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">Available Style(s)</label>
         <div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
@@ -1042,10 +882,9 @@ if ($action == "add") { ?>
 				<thead>
 				<tr>
 					<th width="1%">&nbsp;</th>
-					<?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) { ?><th width="1%">#</th><?php } ?>
-                    <?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) { ?><th>Category</th><?php } ?>
+					<?php if ($_SESSION['prefsStyleSet'] != "BA") { ?><th width="1%">#</th><?php } ?>
+                    <th>Category</th>
 					<th>Style</th>
-					<?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) { ?><th>Style</th><?php } ?>
                     <th width="20%"><em>Received</em> Entries</th>
 				</tr>
 				</thead>
@@ -1080,13 +919,12 @@ if ($action == "add") { ?>
 		"sDom": 'frt',
 		"bStateSave" : false,
 		"bLengthChange" : false,
-		<?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) { ?>"aaSorting": [[1,'asc']],<?php } ?>
-		<?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) { ?>"aaSorting": [[1,'asc'],[2,'asc']],<?php } ?>
+		"aaSorting": [[1,'asc'],[2,'asc']],
 		"bProcessing" : false,
 		"aoColumns": [
 			{ "asSorting": [  ] },
-			<?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) { ?>null,<?php } ?>
 			null,
+			<?php if ($_SESSION['prefsStyleSet'] != "BA") { ?>null,<?php } ?>
 			null,
 			null
 			]
@@ -1127,16 +965,15 @@ if ($action == "add") { ?>
     <div class="form-group">
         <label for="tableStyles" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">Style(s)</label>
         <div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
-        <?php 
+        <?php
 		if ($row_entry_count['count'] > 0) { ?>
 			<table class="table table-responsive table-bordered small" id="sortable">
 				<thead>
 				<tr>
 					<th width="1%">&nbsp;</th>
-					<?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) { ?><th width="1%">#</th><?php } ?>
-                    <?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) { ?><th>Category</th><?php } ?>
+					<?php if ($_SESSION['prefsStyleSet'] != "BA") { ?><th width="1%">#</th><?php } ?>
+					<th>Category</th>
 					<th>Style</th>
-					<?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) { ?><th>Style</th><?php } ?>
                     <th width="20%"><em>Received</em> Entries</th>
 				</tr>
 				</thead>
@@ -1161,7 +998,7 @@ if ($action == "add") { ?>
 <input type="hidden" name="relocate" value="<?php echo relocate($base_url."index.php?section=admin&go=judging_tables","default",$msg,$id); ?>">
 <?php } ?>
 </form>
-<?php 
+<?php
 if ($already_scored) {
 ?>
 <script type="text/javascript">
@@ -1176,37 +1013,28 @@ if ($already_scored) {
         });
     });
 </script>
-<?php } 
-} // end if ($action == "edit") ?>
-
-
-<?php if (($action == "assign") && ($filter == "default")) { ?>
-<div class="form-horizontal">
-    <div class="form-group"><!-- Form Group NOT REQUIRED Select -->
-        <label for="assign_judges" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">Assign Judges To</label>
-        <div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
-        <!-- Input Here -->
-        <select class="selectpicker" name="assign_judges" id="assign_judges" onchange="jumpMenu('self',this,0)" data-live-search="true" data-size="10" data-width="auto">
-            <option value="" disabled selected>Choose Below...</option>
-            <?php do { ?>
-            <option value="index.php?section=admin&amp;action=assign&amp;go=judging_tables&amp;filter=judges&amp;id=<?php echo $row_tables['id']; ?>"><?php echo "Table ".$row_tables['tableNumber'].": ".$row_tables['tableName']; ?></option>
-            <?php } while ($row_tables = mysqli_fetch_assoc($tables)); ?>
-       </select>
-        </div>
-    </div><!-- ./Form Group -->
-    
-    <div class="form-group"><!-- Form Group NOT REQUIRED Select -->
-        <label for="assign_judges" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">Assign Stewards To</label>
-        <div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
-        <!-- Input Here -->
-        <select class="selectpicker" name="assign_judges" id="assign_judges" onchange="jumpMenu('self',this,0)" data-live-search="true" data-size="10" data-width="auto">
-            <option value="" disabled selected>Choose Below...</option>
-            <?php do { ?>
-            <option value="index.php?section=admin&amp;action=assign&amp;go=judging_tables&amp;filter=stewards&amp;id=<?php echo $row_tables_edit['id']; ?>"><?php echo "Table ".$row_tables_edit['tableNumber']." ".$row_tables_edit['tableName']; ?></option>
-            <?php } while ($row_tables_edit = mysqli_fetch_assoc($tables_edit)); ?>
-       </select>
-        </div>
-    </div><!-- ./Form Group -->
+<?php }
+} // end if ($action == "edit")
+if (($action == "assign") && ($filter == "default")) { ?>
+<div class="btn-group" role="group" aria-label="modals">
+    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Assign Judges To... <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+        <?php do { ?>
+        <li class="small"><a href="<?php echo $base_url; ?>index.php?section=admin&amp;action=assign&amp;go=judging_tables&amp;filter=judges&amp;id=<?php echo $row_tables['id']; ?>"><?php echo "Table ".$row_tables['tableNumber'].": ".$row_tables['tableName']; ?></a></li>
+        <?php } while ($row_tables = mysqli_fetch_assoc($tables)); ?>
+    </ul>
+</div>
+<div class="btn-group" role="group" aria-label="modals">
+    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Assign Stewards To... <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+        <?php do { ?>
+        <li class="small"><a href="<?php echo $base_url; ?>index.php?section=admin&amp;action=assign&amp;go=judging_tables&amp;filter=stewards&amp;id=<?php echo $row_tables_edit['id']; ?>"><?php echo "Table ".$row_tables_edit['tableNumber'].": ".$row_tables_edit['tableName']; ?></a></li>
+        <?php } while ($row_tables_edit = mysqli_fetch_assoc($tables_edit)); ?>
+    </ul>
 </div>
 <?php } ?>
 <?php if (($action == "assign") && ($filter != "default") && ($id != "default")) include ('judging_assign.admin.php'); ?>

@@ -1,20 +1,15 @@
-<?php 
+<?php
 /**
- * Module:      barcode_check-in.admin.php 
+ * Module:      barcode_check-in.admin.php
  * Description: Originally deployed as a "mod" for NHC 2013.
- * 
- */ 
- 
+ *
+ */
+
 $fields = 15;
 $entry_list = "";
 $flag_jnum = "";
 $flag_enum = "";
 $jnum_info = "";
-
-
-
-
-
 
 $barcode_text_000 = "Check-In Entries with a Barcode Reader/Scanner";
 $barcode_text_001 = "The following entries have been checked in";
@@ -38,11 +33,7 @@ $barcode_text_018 = "";
 $barcode_text_019 = "";
 $barcode_text_020 = "";
 
-
-
-
-
-if ((NHC) && ($prefix == "final_")) $maxlength = 6; else $maxlength = 4;
+if ($_SESSION['prefsEntryForm'] == "5") $maxlength = 6; else $maxlength = 4;
 
 // Update upon submitting the form
 if ($action == "add") {
@@ -63,24 +54,24 @@ var p = false;
 </script>
 <script type="text/javascript">
 $(function() {
- 
+
     $("form").bind("keypress", function(e) {
             if (e.keyCode == 13) return false;
       });
- 
+
 });
 </script>
 <p class="lead"><?php echo $_SESSION['contestName'].": ".$barcode_text_000; ?></p>
-<?php 
-if (!empty($entry_list)) { 
+<?php
+if (!empty($entry_list)) {
 $entry_list = rtrim($entry_list,", ");
 $entry_list = ltrim($entry_list, ", ");
 ?>
-<div class="well">
-	<p><span class="fa fa-info-circle"></span> <?php echo sprintf("%s: %s", $barcode_text_001, rtrim($entry_list,", ")); ?></p>
+<div class="alert alert-info">
+<span class="fa fa-info-circle"></span> <?php echo sprintf("%s: %s", $barcode_text_001, $entry_list); ?>
 </div>
-<?php } 
-if (!empty($flag_jnum)) { 
+<?php }
+if (!empty($flag_jnum)) {
 	// Build list of already used numbers and the entry number that it was associated with at scan
 	foreach ($flag_jnum as $num) {
 		if (!empty($num)) {
@@ -90,14 +81,14 @@ if (!empty($flag_jnum)) {
 		}
 	}
 ?>
-<div class="well">
-	<p><span class="fa fa-info-circle"></span> <?php echo $barcode_text_002; ?></p>
+<div class="alert alert-warning">
+	<span class="fa fa-exclamation-circle"></span> <?php echo $barcode_text_002; ?>
 	<ul class="small">
 	<?php echo $jnum_info; ?>
     </ul>
 </div>
-<?php }  
-if (!empty($flag_enum)) { 
+<?php }
+if (!empty($flag_enum)) {
 // Build list of already used numbers and the entry number that it was associated with at scan
 $enum_info = "";
 foreach ($flag_enum as $num) {
@@ -138,8 +129,8 @@ foreach ($flag_enum as $num) {
                       <li>Use the TAB key to move between fields, to skip a field, or if the cursor does not move after data is input.</li>
                       <li>Use the space bar to place a checkmark in the &quot;Paid&quot; box.</li>
                     </ul>
-                <p>This function is intended to be used with a barcode reader/scanner in conjunction with the Judging Number Barcode Labels and the Judging Number Round Labels <a href="http://www.brewcompetition.com/bottle-labels" target="_blank">available for download at brewcompetition.com</a>. </p>
-                <p>Also available are <a href="http://www.brewcompetition.com/barcode-check-in" target="_blank">suggested usage instructions</a>.</p>
+                <p>This function is intended to be used with a barcode reader/scanner in conjunction with the Judging Number Barcode Labels and the Judging Number Round Labels <a class="hide-loader" href="http://www.brewcompetition.com/bottle-labels" target="_blank">available for download at brewcompetition.com</a>. </p>
+                <p>Also available are <a class="hide-loader" href="http://www.brewcompetition.com/barcode-check-in" target="_blank">suggested usage instructions</a>.</p>
             </div>
             <div class="modal-footer">
             	<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
@@ -148,16 +139,17 @@ foreach ($flag_enum as $num) {
     </div>
 </div><!-- ./modal -->
 </div>
-<form method="post" action="<?php echo $base_url; ?>index.php?section=admin&amp;go=checkin&amp;action=add" id="form1" onsubmit = "return(p)">
+<form method="post" data-toggle="validator" action="<?php echo $base_url; ?>index.php?section=admin&amp;go=checkin&amp;action=add" id="form1" onsubmit = "return(p)">
 <div class="form-inline">
-	<?php for ($i=1; $i <= $fields; $i++) { 
-	
-	?>
+	<?php for ($i=1; $i <= $fields; $i++) { ?>
     <div class="bcoem-admin-element hidden-print">
     <input type="hidden" name="id[]" value="<?php echo $i; ?>">
 	<div class="form-group">
     	<label for="">Entry Number</label>
-    	<input type="text" class="form-control" maxlength="<?php echo $maxlength; ?>" id="eid<?php echo $i; ?>" name="eid<?php echo $i; ?>" onkeyup="moveOnMax(this,'judgingNumber<?php echo $i; ?>')" /><?php if ($i == "1") { ?><script>document.getElementById('eid1').focus()</script><?php } ?>
+    	<input type="text" class="form-control" maxlength="<?php echo $maxlength; ?>" id="eid<?php echo $i; ?>" name="eid<?php echo $i; ?>" onkeyup="moveOnMax(this,'judgingNumber<?php echo $i; ?>')" <?php if ($i == "1") echo "data-error=\"Field must have a 6 digit number.\" required autofocus"; ?> />
+      <?php if ($i == "1") { ?>
+      <div class="help-block with-errors"></div>
+      <?php } ?>
   	</div>
   	<div class="form-group">
     	<label for="">Judging Number</label>
@@ -165,7 +157,7 @@ foreach ($flag_enum as $num) {
   	</div>
     <div class="form-group">
     	<label for="">Box Number</label>
-    	<input type="text" class="form-control" maxlength="5" id="box<?php echo $i; ?>" name="box<?php echo $i; ?>"  onkeyup="moveOnMax(this,'brewPaid<?php echo ($i); ?>')" />
+    	<input type="text" class="form-control" maxlength="5" id="box<?php echo $i; ?>" name="box<?php echo $i; ?>" onkeyup="moveOnMax(this,'brewPaid<?php echo ($i); ?>')" />
   	</div>
 	<?php if ($_SESSION['prefsPayToPrint'] == "N") { ?>
     <div class="form-group">

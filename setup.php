@@ -1,16 +1,42 @@
 <?php
 ob_start();
-require('paths.php');
-require(INCLUDES.'url_variables.inc.php');
-require(LANG.'language.lang.php');
-require(LIB.'common.lib.php');
-require(LIB.'help.lib.php');
-require(LIB.'update.lib.php');
-require(DB.'setup.db.php');
-require(INCLUDES.'db_tables.inc.php');
-require(LANG.'language.lang.php');
-require(INCLUDES.'constants.inc.php');
-require(INCLUDES.'headers.inc.php');
+require_once ('paths.php');
+require_once (INCLUDES.'url_variables.inc.php');
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_secure', 1);
+if (SINGLE) require_once(SSO.'sso.inc.php');
+require_once (LIB.'common.lib.php');
+require_once (LIB.'update.lib.php');
+require_once (DB.'setup.db.php');
+require_once (INCLUDES.'db_tables.inc.php');
+require_once (LIB.'help.lib.php');
+
+if ($section == "step4") unset($_SESSION['prefs'.$prefix_session]);
+
+// Set language preferences in session variables
+if (empty($_SESSION['prefsLang'.$prefix_session])) {
+
+    // Default is US English. Users will choose language when defining preferences.
+    $_SESSION['prefsLanguage'] = "en-US";
+
+    // Check if variation used (demarked with a dash)
+    if (strpos($_SESSION['prefsLanguage'], '-') !== FALSE) {
+        $lang_folder = explode("-",$_SESSION['prefsLanguage']);
+        $_SESSION['prefsLanguageFolder'] = strtolower($lang_folder[0]);
+    }
+
+    else $_SESSION['prefsLanguageFolder'] = strtolower($_SESSION['prefsLanguage']);
+
+    $_SESSION['prefsLang'.$prefix_session] = "1";
+
+}
+
+// require_once (DB.'common.db.php');
+require_once (INCLUDES.'constants.inc.php');
+require_once (LANG.'language.lang.php');
+require_once (INCLUDES.'headers.inc.php');
+require_once (INCLUDES.'scrubber.inc.php');
 
 if ($section == "step0") {
 
@@ -29,8 +55,6 @@ if ($section == "step0") {
 	}
 
 }
-
-if (($section == "step2") || ($section == "step3")) require(INCLUDES.'constants.inc.php');
 
 // Set default timezone for setup steps before configuration of installation default timezone
 $timezone_raw = "0";
@@ -77,6 +101,8 @@ else {
 	$setup_body .= $output;
 }
 
+$security_question = array($label_secret_01, $label_secret_05, $label_secret_06, $label_secret_07, $label_secret_08, $label_secret_09, $label_secret_10, $label_secret_11, $label_secret_12, $label_secret_13, $label_secret_14, $label_secret_15, $label_secret_16, $label_secret_17, $label_secret_18, $label_secret_19, $label_secret_20, $label_secret_21, $label_secret_22, $label_secret_23, $label_secret_25, $label_secret_26, $label_secret_27);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -105,13 +131,17 @@ else {
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.pack.js"></script>
 
+		<?php if ($section == "step4") { ?>
         <!-- Load TinyMCE -->
         <script src="https://cdn.tinymce.com/4/tinymce.min.js"></script>
+		<script src="<?php echo $base_url;?>js_includes/tinymce-init.min.js"></script>
+		<?php } ?>
 
-         <!-- Load Bootstrap DateTime Picker / http://eonasdan.github.io/bootstrap-datetimepicker/ -->
-        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.min.css" />
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.1/moment-with-locales.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
+        <!-- Load Bootstrap DateTime Picker / http://eonasdan.github.io/bootstrap-datetimepicker/ -->
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.min.css" />
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.1/moment-with-locales.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
+		<script src="<?php echo $base_url;?>js_includes/date-time.min.js"></script>
 
         <!-- Load Bootstrap Form Validator / http://1000hz.github.io/bootstrap-validator -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/1000hz-bootstrap-validator/0.9.0/validator.min.js"></script>
@@ -119,7 +149,7 @@ else {
         <!-- Load Bootstrap-Select / http://silviomoreto.github.io/bootstrap-select -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.9.3/css/bootstrap-select.min.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.9.3/js/bootstrap-select.min.js"></script>
-        
+
         <!-- Load jQuery Password Strength Meter for Twitter Bootstrap / https://github.com/ablanco/jquery.pwstrength.bootstrap -->
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pwstrength-bootstrap/2.1.0/pwstrength-bootstrap.min.js"></script>
@@ -128,6 +158,7 @@ else {
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 
         <!-- Load BCOE&M Custom CSS -->
+        <link rel="stylesheet" type="text/css" href="<?php echo $base_url; ?>css/common.min.css">
         <link rel="stylesheet" type="text/css" href="<?php echo $base_url; ?>css/default.min.css">
 
         <!-- Load BCOE&M Custom JS -->
@@ -156,6 +187,7 @@ else {
     <!-- ALERTS -->
     <div class="container-fluid bcoem-warning-container">
     	<?php echo $setup_alerts; ?>
+        <?php if (DEBUG_SESSION_VARS) include (DEBUGGING.'session_vars.debug.php'); ?>
     </div><!-- ./container -->
 
     <!-- Setup Pages (Fluid Layout) -->

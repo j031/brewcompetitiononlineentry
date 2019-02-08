@@ -30,71 +30,30 @@ if ($_SESSION['prefsStyleSet'] == "BJCP2015") {
 	$category_end = 34;
 }
 
-if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
-	
-	include (INCLUDES.'ba_constants.inc.php');
-	
-	for ($i=1; $i<=$ba_id_end; $i++) {
-		
-		if (SINGLE) $query_substyle_count = sprintf("SELECT COUNT(*) as 'count' FROM %s WHERE brewSubCategory='%s' AND brewPaid='1' AND brewReceived='1' AND brewConfirmed='1' AND comp_id='%s'",$prefix."brewing",$i, $_SESSION['comp_id']);
-		else $query_substyle_count = sprintf("SELECT COUNT(*) as 'count' FROM %s WHERE brewSubCategory='%s' AND brewPaid='1' AND brewReceived='1' AND brewConfirmed='1'",$prefix."brewing",$i);
-		
-		if (SINGLE) $query_substyle_count_logged = sprintf("SELECT COUNT(*) as 'count' FROM %s WHERE brewSubCateogry='%s' AND brewConfirmed='1' AND comp_id='%s'",$prefix."brewing", $i, $_SESSION['comp_id']);
-		else $query_substyle_count_logged = sprintf("SELECT COUNT(*) as 'count' FROM %s WHERE brewSubCategory='%s' AND brewConfirmed='1'", $prefix."brewing", $i);
-			
-		//if (strpos($_SESSION['styles']['data'][$i-1]['category']['name'],"Mead") !== false) $cat = 12; else $cat = 1;
-		
-		$cat = $_SESSION['styles']['data'][$i-1]['category']['id'];
-		
-		include (DB.'entries_by_substyle.db.php');
-		
-		// $html_testing .= "Cat No: ".$_SESSION['styles']['data'][$i-1]['id']." Query: ".$query_substyle_count_logged."<br>";
-		
-		if (($row_substyle_count['count'] > 0) || ($row_substyle_count_logged['count'] > 0)) {
-			
-			if ($action == "print") $html .= "<tr>"; 
-			else $html .= "<tr>";
-			if (in_array($cat,$ba_beer_categories)) $substyle_cat = "Beer";
-			elseif (in_array($cat,$ba_mead_cider_categories))  $substyle_cat = "Mead/Cider";
-			else $substyle_cat = "Custom";
-
-			//$html .= "<td>".sprintf("%03s",$_SESSION['styles']['data'][$i-1]['id'])." ".$_SESSION['styles']['data'][$i-1]['name']."</td>";
-			//$html .= "<td class=\"hidden-xs hidden-sm\">".sprintf("%02s",$_SESSION['styles']['data'][$i-1]['category']['id'])." ".$_SESSION['styles']['data'][$i-1]['category']['name']."</td>";
-			
-			$html .= "<td>".$_SESSION['styles']['data'][$i-1]['name']."</td>";
-			$html .= "<td class=\"hidden-xs hidden-sm\">".$_SESSION['styles']['data'][$i-1]['category']['name']."</td>";
-			$html .= "<td>".$row_substyle_count_logged['count']."</td>";
-			$html .= "<td>".$row_substyle_count['count']."</td>";
-			$html .= "<td class=\"hidden-xs hidden-sm\">".$substyle_cat."</td>";
-			$html .= "</tr>";
-			
-		}
-	}
-	
-}
-
 include (DB.'styles.db.php');
 
-do { 
-	$subcats[] = $row_styles['brewStyleGroup']."|".$row_styles['brewStyleNum']."|".$row_styles['brewStyle']."|".$row_styles['brewStyleCategory']."|".$row_styles['brewStyleActive']; 
+$subcats = array();
+
+do {
+	$subcats[] = $row_styles['brewStyleGroup']."|".$row_styles['brewStyleNum']."|".$row_styles['brewStyle']."|".$row_styles['brewStyleCategory']."|".$row_styles['brewStyleActive'];
 } while ($row_styles = mysqli_fetch_assoc($styles));
 
 foreach ($subcats as $subcat) {
-	
+
 	$substyle = explode("|",$subcat);
-	
+
 	if ($substyle[4] == "Y") {
-		
+
 		if (SINGLE) $query_substyle_count = sprintf("SELECT COUNT(*) AS 'count' FROM %s WHERE brewCategorySort='%s' AND brewSubCategory='%s' AND brewConfirmed='1' AND brewPaid='1' AND brewReceived='1' AND comp_id='%s'",$prefix."brewing",$substyle[0],$substyle[1], $_SESSION['comp_id']);
 		else $query_substyle_count = sprintf("SELECT COUNT(*) AS 'count' FROM %s WHERE brewCategorySort='%s' AND brewSubCategory='%s' AND brewConfirmed='1' AND brewPaid='1' AND brewReceived='1'",$prefix."brewing",$substyle[0],$substyle[1]);
-		
+
 		if (SINGLE) $query_substyle_count_logged = sprintf("SELECT COUNT(*) AS 'count' FROM %s WHERE brewCategorySort='%s' AND brewSubCategory='%s' AND brewConfirmed='1' AND comp_id='%s'",$prefix."brewing",$substyle[0],$substyle[1], $_SESSION['comp_id']);
 		else $query_substyle_count_logged = sprintf("SELECT COUNT(*) AS 'count' FROM %s WHERE brewCategorySort='%s' AND brewSubCategory='%s' AND brewConfirmed='1'",$prefix."brewing",$substyle[0],$substyle[1]);
-		
+
 		include (DB.'entries_by_substyle.db.php');
-		
+
 	}
-	
+
 	// ------ DEBUG ------
 	//print_r($subcats);
 	//echo "<br>";
@@ -105,17 +64,17 @@ foreach ($subcats as $subcat) {
 	//echo $row_style_type['brewStyleType']."<br>";
 	//echo $style_type."<br>";
 	//echo $source."<br>";
-	
-	
-	if (!empty($substyle)) { 
+
+
+	if (!empty($substyle)) {
 		if ($substyle[4] == "Y") {
-			if ($action == "print") $html .= "<tr>"; 
+			if ($action == "print") $html .= "<tr>";
 			else $html .= "<tr>";
 			if ($substyle[3] != "") $substyle_cat = $substyle[3];
 			else $substyle_cat = "Custom";
-			
+
 			$html .= "<td>";
-			if (strpos($_SESSION['prefsStyleSet'],"BABDB") === false) $html .= $substyle[0].$substyle[1]." - ";
+			if ($_SESSION['prefsStyleSet'] != "BA") $html .= $substyle[0].$substyle[1]." - ";
 			$html .= $substyle[2]."</td>";
 			$html .= "<td class=\"hidden-xs hidden-sm\">".$substyle_cat."</td>";
 			$html .= "<td>".$row_substyle_count_logged['count']."</td>";
@@ -124,8 +83,8 @@ foreach ($subcats as $subcat) {
 			$html .= "</tr>";
 		}
 	}
-	
-} 
+
+}
 
 //print_r($style_type_array);
 
@@ -155,23 +114,23 @@ if (($beer_total > 0) || ($beer_total_logged > 0)) {
 	$html_count .= "</tr>";
 }
 
-if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
-	
+if ($_SESSION['prefsStyleSet'] == "BA") {
+
 	if (($mead_cider_total > 0) || ($mead_cider_total_logged > 0)) {
-		if ($action == "print") $html_count.= "<tr>"; 
+		if ($action == "print") $html_count.= "<tr>";
 		else $html_count .= "<tr>";
 		$html_count .= "<td width='25%' nowrap='nowrap'>Mead/Cider</td>";
 		$html_count .= "<td>".$mead_cider_total_logged."</td>";
 		$html_count .= "<td>".$mead_cider_total."</td>";
 		$html_count .= "</tr>";
 	}
-	
+
 }
 
 else {
 
 	if (($mead_total > 0) || ($mead_total_logged > 0)) {
-		if ($action == "print") $html_count.= "<tr>"; 
+		if ($action == "print") $html_count.= "<tr>";
 		else $html_count .= "<tr>";
 		$html_count .= "<td width='25%' nowrap='nowrap'>Mead</td>";
 		$html_count .= "<td>".$mead_total_logged."</td>";
@@ -181,7 +140,7 @@ else {
 
 	if (($cider_total > 0) || ($cider_total_logged > 0)) {
 
-		if ($action == "print") $html_count.= "<tr>"; 
+		if ($action == "print") $html_count.= "<tr>";
 		else $html_count .= "<tr>";
 		$html_count .= "<td width='25%'>Cider</td>";
 		$html_count .= "<td>".$cider_total_logged."</td>";
@@ -192,16 +151,16 @@ else {
 }
 
 if (($other_total > 0) || ($other_total_logged > 0)) {
-		
-	if ($action == "print") $html_count.= "<tr>"; 
+
+	if ($action == "print") $html_count.= "<tr>";
 	else $html_count .= "<tr>";
 	$html_count .= "<td width='25%'>Other</td>";
 	$html_count .= "<td>".$other_total."</td>";
 	$html_count .= "<td>".$other_total_logged."</td>";
-	$html_count .= "</tr>";		
+	$html_count .= "</tr>";
 }
 
-if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
+if ($_SESSION['prefsStyleSet'] == "BA") {
 	$total_style_count = $beer_total + $mead_cider_total + $other_total;
 	$total_style_count_logged = $beer_total_logged + $mead_cider_total_logged + $other_total_logged;
 }
@@ -214,18 +173,18 @@ else {
 $total_style_count_all = $total_style_count + $total_style_count_logged;
 
 if (($total_style_count > 0) || ($total_style_count_logged > 0)) {
-	
+
 	$html_count .= "<tfoot>";
-	$html_count .= "<tr>"; 
+	$html_count .= "<tr>";
 	$html_count .= "<td><strong>Totals</strong></td>";
 	$html_count .= "<td>".$total_style_count_logged."</td>";
 	$html_count .= "<td>".$total_style_count."</td>";
 	$html_count .= "</tr>";
 	$html_count .= "</tfoot>";
-	
-	
+
+
 	$html .= "<tfoot>";
-	$html .= "<tr>"; 
+	$html .= "<tr>";
 	$html .= "<td><strong>Totals</strong></td>";
 	$html .= "<td class=\"hidden-xs hidden-sm\">&nbsp;</td>";
 	$html .= "<td>".$total_style_count_logged."</td>";
@@ -246,7 +205,7 @@ if (($total_style_count > 0) || ($total_style_count_logged > 0)) {
 <?php } echo $html_testing;
 if ($total_style_count > 0) { ?>
 <script type="text/javascript" language="javascript">
-// The following is for demonstration purposes only. 
+// The following is for demonstration purposes only.
 // Complete documentation and usage at http://www.datatables.net
 	$(document).ready(function() {
 		$('#sortable5').dataTable( {
@@ -286,12 +245,12 @@ if ($total_style_count > 0) { ?>
 			"sDom": 'rt',
 			"bStateSave" : false,
 			"bLengthChange" : false,
-			<?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) { ?>"aaSorting": [[1,'asc']],
+			<?php if ($_SESSION['prefsStyleSet'] == "BA") { ?>"aaSorting": [[1,'asc'],[0,'asc']],
 			<?php } else { ?>"aaSorting": [[0,'asc']],<?php } ?>
 			"aoColumns": [
 				null,
 				null,
-				null, 
+				null,
 				null,
 				null
 				]

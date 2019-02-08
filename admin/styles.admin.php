@@ -2,205 +2,77 @@
 
 if ($section != "step7") include (DB.'judging_locations.db.php');
 include (DB.'styles.db.php');
+if ($_SESSION['prefsStyleSet'] == "BA") include (INCLUDES.'ba_constants.inc.php');
 //echo $query_styles;
 //echo $row_styles['brewStyle'];
 
 // Build style table body
 $table_body = "";
 
-if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
+if ((($action == "default") && ($filter == "default")) || ($section == "step7") || (($action == "default") && ($filter == "judging") && ($bid != "default"))) {
 
-	if ((($action == "default") && ($filter == "default")) || ($section == "step7") || (($action == "default") && ($filter == "judging") && ($bid != "default"))) {
+	$sorting_default = "[[2,'asc']]";
 
-		$sorting_default = "[[3,'asc'],[2,'asc'],[1,'asc']]";
+	do {
 
-		$styleSet_explodies = explode("|",$_SESSION['prefsStyleSet']);
-		$style_explodies = explode(",",$styleSet_explodies[2]);
-		// print_r($style_explodies);
-		// print_r($_SESSION['styles']);
+		if ($row_styles['id'] != "") {
 
-		include (INCLUDES.'ba_constants.inc.php');
+			$brewStyleActive = "";
+			if (isset($row_styles['brewStyleActive']) && ($row_styles['brewStyleActive'] == "Y")) $brewStyleActive = "CHECKED";
 
-		foreach ($_SESSION['styles'] as $ba_styles => $stylesData) {
+			$brewStyleJudgingLoc = "";
+			if (isset($row_styles['brewStyleJudgingLoc']) && ($row_styles['brewStyleJudgingLoc'] == $bid)) $brewStyleJudgingLoc = "CHECKED";
 
-			if (is_array($stylesData) || is_object($stylesData)) {
+			$brewStyleOwn_prefix = "";
+			$brewStyleOwn_suffix = "";
+			 if ($row_styles['brewStyleOwn'] != "bcoe") {
+				 $brewStyleOwn_prefix = "*";
+				 $brewStyleOwn_suffix = " - Custom Style";
+			 }
 
-				foreach ($stylesData as $key => $ba_style) {
+			$style_own = "";
+			if (style_type($row_styles['brewStyleType'],"1","") <= "3") $style_own = "bcoe";
+			else $style_own = "custom";
 
-						$style_value = $ba_style['category']['id']."-".$ba_style['id'];
+			$brewStyleReqSpec = "";
+			$brewStyleStrength = "";
+			$brewStyleCarb = "";
+			$brewStyleSweet = "";
 
-						$brewStyleReqSpec = "";
-						$brewStyleStrength = "";
-						$brewStyleCarb = "";
-						$brewStyleSweet = "";
+			if ($row_styles['brewStyleReqSpec'] == 1) $brewStyleReqSpec = "<span class=\"fa fa-check-circle text-orange\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"".$entry_info_text_048."\"></span> ";
 
-						if (in_array($ba_style['category']['id'],$ba_beer_categories)) $styleType = "Beer";
-						else $styleType = "Mead/Cider";
+			if ($row_styles['brewStyleStrength'] == 1) $brewStyleStrength = "<span class=\"fa fa-check-circle text-purple\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"".$entry_info_text_049."\"></span> ";
 
-						if (in_array($style_value,$ba_special)) $brewStyleReqSpec = "<span class=\"fa fa-lg fa-check-circle text-orange\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Additional info required for ".$row_styles['brewStyle']."\"></span> ";
+			if ($row_styles['brewStyleCarb'] == 1) $brewStyleCarb = "<span class=\"fa fa-check-circle text-teal\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"".$entry_info_text_050."\"></span> ";
 
-						if (in_array($style_value,$ba_strength)) $brewStyleStrength = "<span class=\"fa fa-lg fa-check-circle text-purple\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Strength required for ".$row_styles['brewStyle']."\"></span> ";
-
-						if (in_array($style_value,$ba_carb)) $brewStyleCarb = "<span class=\"fa fa-lg fa-check-circle text-teal\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Carbonation required for ".$row_styles['brewStyle']."\"></span> ";
-
-						if (in_array($style_value,$ba_sweetness)) $brewStyleSweet = "<span class=\"fa fa-lg fa-check-circle text-gold\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Sweetness required for ".$row_styles['brewStyle']."\"></span>";
-
-						if ($ba_style['category']['name'] == "Hybrid/mixed Beer") $categoryName = "Hybrid/Mixed Beer";
-						elseif ($ba_style['category']['name'] == "European-germanic Lager") $categoryName = "European-Germanic Lager";
-						else $categoryName = ucwords($ba_style['category']['name']);
-
-						$brewStyleActive = "";
-						if (in_array($ba_style['id'],$style_explodies)) $brewStyleActive = "CHECKED";
-
-						$table_body .= "<tr>";
-						$table_body .= "<input type=\"hidden\" name=\"id[]\" value=\"".$ba_style['id']."\" />";
-						$table_body .= "<input type=\"hidden\" name=\"ba_brewerydb".$ba_style['id']."\" value=\"1\" />";
-						if ($bid == "default") $table_body .= "<td width=\"1%\" nowrap><input name=\"brewStyleActive".$ba_style['id']."\" type=\"checkbox\" value=\"Y\" ".$brewStyleActive."></td>";
-						if ($bid != "default") $table_body .= "<td width=\"1%\" nowrap><input name=\"brewStyleJudgingLoc".$ba_style['id']."\" type=\"checkbox\" value=\"".$bid."\" ".$brewStyleJudgingLoc."></td>";
-						$table_body .= "<td>".$ba_style['name']."</td>";
-						$table_body .= "<td>".$categoryName."</td>";
-						$table_body .= "<td>".$styleType."</td>";
-						$table_body .= "<td>".$brewStyleReqSpec.$brewStyleStrength.$brewStyleCarb.$brewStyleSweet."</td>";
-
-						if ($section != "step7")  $table_body .= "<td class=\"hidden-print\"><span class=\"fa fa-lg fa-pencil text-muted\"></span> <span class=\"fa fa-lg fa-trash-o text-muted\"></span> ";
-						$table_body .= "<a href=\"https://www.brewersassociation.org/resources/brewers-association-beer-style-guidelines/\" target=\"_blank\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Link to the Brewers Association style guidelines\"><span class=\"fa fa-lg fa-link\"></span></a>";
-						$table_body .= "</td>";
-						$table_body .= "</tr>";
+			if ($row_styles['brewStyleSweet'] == 1) $brewStyleSweet = "<span class=\"fa fa-check-circle text-gold\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"".$entry_info_text_051."\"></span> ";
 
 
-					// }
-
-				} // end foreach ($stylesData as $data => $ba_style)
-
-			} // end if (is_array($stylesData) || is_object($stylesData))
-
-		} // end foreach ($_SESSION['styles'] as $styles => $stylesData)
-
-
-
-		// Display any custom styles...
-
-		if ($totalRows_styles > 0) {
-
-			do {
-
-				if ($row_styles['id'] != "") {
-
-					$brewStyleActive = "";
-					if (isset($row_styles['brewStyleActive']) && ($row_styles['brewStyleActive'] == "Y")) $brewStyleActive = "CHECKED";
-
-					$brewStyleJudgingLoc = "";
-					if (isset($row_styles['brewStyleJudgingLoc']) && ($row_styles['brewStyleJudgingLoc'] == $bid)) $brewStyleJudgingLoc = "CHECKED";
-
-					$style_own = "";
-					if (style_type($row_styles['brewStyleType'],"1","") <= "3") $style_own = "bcoe";
-					else $style_own = "custom";
-
-					$brewStyleReqSpec = "";
-					$brewStyleStrength = "";
-					$brewStyleCarb = "";
-					$brewStyleSweet = "";
-
-					if ($row_styles['brewStyleReqSpec'] == 1) $brewStyleReqSpec = "<span class=\"fa fa-lg fa-check-circle text-orange\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Additional info required for ".$row_styles['brewStyle']."\"></span> ";
-
-					if ($row_styles['brewStyleStrength'] == 1) $brewStyleStrength = "<span class=\"fa fa-lg fa-check-circle text-purple\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Strength required for ".$row_styles['brewStyle']."\"></span> ";
-
-					if ($row_styles['brewStyleCarb'] == 1) $brewStyleCarb = "<span class=\"fa fa-lg fa-check-circle text-teal\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Carbonation required for ".$row_styles['brewStyle']."\"></span> ";
-
-					if ($row_styles['brewStyleSweet'] == 1) $brewStyleSweet = "<span class=\"fa fa-lg fa-check-circle text-gold\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Sweetness required for ".$row_styles['brewStyle']."\"></span>";
-
-
-					$table_body .= "<tr>";
-					$table_body .= "<input type=\"hidden\" name=\"id[]\" value=\"".$row_styles['id']."\" />";
-					$table_body .= "<input type=\"hidden\" name=\"ba_brewerydb".$row_styles['id']."\" value=\"0\" />";
-					if ($bid == "default") $table_body .= "<td width=\"1%\" nowrap><input name=\"brewStyleActive".$row_styles['id']."\" type=\"checkbox\" value=\"Y\" ".$brewStyleActive."></td>";
-					if ($bid != "default") $table_body .= "<td width=\"1%\" nowrap><input name=\"brewStyleJudgingLoc".$row_styles['id']."\" type=\"checkbox\" value=\"".$bid."\" ".$brewStyleJudgingLoc."></td>";
-					$table_body .= "<td>".$row_styles['brewStyle']."</td>";
-					$table_body .= "<td>*Custom Style</td>";
-					$table_body .= "<td>".style_type($row_styles['brewStyleType'],"2",$style_own)."</td>";
-					$table_body .= "<td>".$brewStyleReqSpec.$brewStyleStrength.$brewStyleCarb.$brewStyleSweet."</td>";
-
-					if ($section != "step7") {
-						$table_body .= "<td class=\"hidden-print\">";
-						if ($row_styles['brewStyleOwn'] != "bcoe") $table_body .= "<a href=\"".$base_url."index.php?section=admin&amp;go=".$go."&amp;action=edit&amp;id=".$row_styles['id']."&amp;view=".$row_styles['brewStyleType']."\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Edit ".$row_styles['brewStyle']."\"><span class=\"fa fa-lg fa-pencil\"></span></a> <a href=\"".$base_url."includes/process.inc.php?section=admin&amp;go=".$go."&amp;dbTable=".$styles_db_table."&amp;action=delete&amp;id=".$row_styles['id']."\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Delete ".$row_styles['brewStyle']."\" data-confirm=\"Are you sure you want to delete ".$row_styles['brewStyle']."? This cannot be undone.\"><span class=\"fa fa-lg fa-trash-o\"></span></a> ";
-						else $table_body .= "<span class=\"fa fa-lg fa-pencil text-muted\"></span> <span class=\"fa fa-lg fa-trash-o text-muted\"></span> ";
-					}
-					if ($row_styles['brewStyleLink'] !="") $table_body .= "<a href=\"".$row_styles['brewStyleLink']."\" target=\"_blank\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Link to BJCP ".$row_styles['brewStyle']." sub-style on bjcp.org\"><span class=\"fa fa-lg fa-link\"></span></a>";
-					$table_body .= "</td>";
-					$table_body .= "</tr>";
-
-				}
-
-			} while($row_styles = mysqli_fetch_assoc($styles));
+			$table_body .= "<tr>";
+			$table_body .= "<input type=\"hidden\" name=\"id[]\" value=\"".$row_styles['id']."\" />";
+			if ($bid == "default") $table_body .= "<td width=\"1%\" nowrap><input name=\"brewStyleActive".$row_styles['id']."\" type=\"checkbox\" value=\"Y\" ".$brewStyleActive."></td>";
+			if ($bid != "default") $table_body .= "<td width=\"1%\" nowrap><input name=\"brewStyleJudgingLoc".$row_styles['id']."\" type=\"checkbox\" value=\"".$bid."\" ".$brewStyleJudgingLoc."></td>";
+			$table_body .= "<td>".$row_styles['brewStyle']."</td>";
+			if ($_SESSION['prefsStyleSet'] == "BA") {
+				if ($row_styles['brewStyleOwn'] == "custom") $table_body .= "<td>Custom Style</td>";
+				else $table_body .= "<td>".$ba_category_names[ltrim($row_styles['brewStyleGroup'],"0")]."</td>";
+			}
+			else $table_body .= "<td>".$brewStyleOwn_prefix.$row_styles['brewStyleGroup'].$row_styles['brewStyleNum'].$brewStyleOwn_suffix."</td>";
+			$table_body .= "<td>".style_type($row_styles['brewStyleType'],"2",$style_own)."</td>";
+			$table_body .= "<td>".$brewStyleReqSpec.$brewStyleStrength.$brewStyleCarb.$brewStyleSweet."</td>";
+			$table_body .= "<td class=\"hidden-print\">";
+			if ($section != "step7") {
+				if ($row_styles['brewStyleOwn'] != "bcoe") $table_body .= "<a class=\"hide-loader\" href=\"".$base_url."index.php?section=admin&amp;go=".$go."&amp;action=edit&amp;id=".$row_styles['id']."&amp;view=".$row_styles['brewStyleType']."\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Edit ".$row_styles['brewStyle']."\"><span class=\"fa fa-lg fa-pencil\"></span></a> <a href=\"".$base_url."includes/process.inc.php?section=admin&amp;go=".$go."&amp;dbTable=".$styles_db_table."&amp;action=delete&amp;id=".$row_styles['id']."\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Delete ".$row_styles['brewStyle']."\" data-confirm=\"Are you sure you want to delete ".$row_styles['brewStyle']."? This cannot be undone.\"><span class=\"fa fa-lg fa-trash-o\"></span></a> ";
+				else $table_body .= "<span class=\"fa fa-lg fa-pencil text-muted\"></span> <span class=\"fa fa-lg fa-trash-o text-muted\"></span> ";
+			}
+			if ($row_styles['brewStyleLink'] !="") $table_body .= "<a class=\"hide-loader\" href=\"".$row_styles['brewStyleLink']."\" target=\"_blank\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Link to BJCP ".$row_styles['brewStyle']." sub-style on bjcp.org\"><span class=\"fa fa-lg fa-link\"></span></a>";
+			$table_body .= "</td>";
+			$table_body .= "</tr>";
 
 		}
 
-	}
+	} while($row_styles = mysqli_fetch_assoc($styles));
 
-} // end if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false)
-
-else {
-
-	if ((($action == "default") && ($filter == "default")) || ($section == "step7") || (($action == "default") && ($filter == "judging") && ($bid != "default"))) {
-
-		$sorting_default = "[[2,'asc']]";
-
-		do {
-
-			if ($row_styles['id'] != "") {
-
-				$brewStyleActive = "";
-				if (isset($row_styles['brewStyleActive']) && ($row_styles['brewStyleActive'] == "Y")) $brewStyleActive = "CHECKED";
-
-				$brewStyleJudgingLoc = "";
-				if (isset($row_styles['brewStyleJudgingLoc']) && ($row_styles['brewStyleJudgingLoc'] == $bid)) $brewStyleJudgingLoc = "CHECKED";
-
-				$brewStyleOwn_prefix = "";
-				$brewStyleOwn_suffix = "";
-				 if ($row_styles['brewStyleOwn'] != "bcoe") {
-					 $brewStyleOwn_prefix = "*";
-					 $brewStyleOwn_suffix = " - Custom Style";
-				 }
-
-				$style_own = "";
-				if (style_type($row_styles['brewStyleType'],"1","") <= "3") $style_own = "bcoe";
-				else $style_own = "custom";
-
-				$brewStyleReqSpec = "";
-				$brewStyleStrength = "";
-				$brewStyleCarb = "";
-				$brewStyleSweet = "";
-
-				if ($row_styles['brewStyleReqSpec'] == 1) $brewStyleReqSpec = "<span class=\"fa fa-lg fa-check-circle text-orange\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Additional info required for ".$row_styles['brewStyle']."\"></span> ";
-
-				if ($row_styles['brewStyleStrength'] == 1) $brewStyleStrength = "<span class=\"fa fa-lg fa-check-circle text-purple\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Strength required for ".$row_styles['brewStyle']."\"></span> ";
-
-				if ($row_styles['brewStyleCarb'] == 1) $brewStyleCarb = "<span class=\"fa fa-lg fa-check-circle text-teal\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Carbonation required for ".$row_styles['brewStyle']."\"></span> ";
-
-				if ($row_styles['brewStyleSweet'] == 1) $brewStyleSweet = "<span class=\"fa fa-lg fa-check-circle text-gold\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Sweetness required for ".$row_styles['brewStyle']."\"></span>";
-
-
-				$table_body .= "<tr>";
-				$table_body .= "<input type=\"hidden\" name=\"id[]\" value=\"".$row_styles['id']."\" />";
-				if ($bid == "default") $table_body .= "<td width=\"1%\" nowrap><input name=\"brewStyleActive".$row_styles['id']."\" type=\"checkbox\" value=\"Y\" ".$brewStyleActive."></td>";
-				if ($bid != "default") $table_body .= "<td width=\"1%\" nowrap><input name=\"brewStyleJudgingLoc".$row_styles['id']."\" type=\"checkbox\" value=\"".$bid."\" ".$brewStyleJudgingLoc."></td>";
-				$table_body .= "<td>".$row_styles['brewStyle']."</td>";
-				$table_body .= "<td>".$brewStyleOwn_prefix.$row_styles['brewStyleGroup'].$row_styles['brewStyleNum'].$brewStyleOwn_suffix."</td>";
-				$table_body .= "<td>".style_type($row_styles['brewStyleType'],"2",$style_own)."</td>";
-				$table_body .= "<td>".$brewStyleReqSpec.$brewStyleStrength.$brewStyleCarb.$brewStyleSweet."</td>";
-				$table_body .= "<td class=\"hidden-print\">";
-				if ($section != "step7") {
-					if ($row_styles['brewStyleOwn'] != "bcoe") $table_body .= "<a href=\"".$base_url."index.php?section=admin&amp;go=".$go."&amp;action=edit&amp;id=".$row_styles['id']."&amp;view=".$row_styles['brewStyleType']."\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Edit ".$row_styles['brewStyle']."\"><span class=\"fa fa-lg fa-pencil\"></span></a> <a href=\"".$base_url."includes/process.inc.php?section=admin&amp;go=".$go."&amp;dbTable=".$styles_db_table."&amp;action=delete&amp;id=".$row_styles['id']."\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Delete ".$row_styles['brewStyle']."\" data-confirm=\"Are you sure you want to delete ".$row_styles['brewStyle']."? This cannot be undone.\"><span class=\"fa fa-lg fa-trash-o\"></span></a> ";
-					else $table_body .= "<span class=\"fa fa-lg fa-pencil text-muted\"></span> <span class=\"fa fa-lg fa-trash-o text-muted\"></span> ";
-				}
-				if ($row_styles['brewStyleLink'] !="") $table_body .= "<a href=\"".$row_styles['brewStyleLink']."\" target=\"_blank\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Link to BJCP ".$row_styles['brewStyle']." sub-style on bjcp.org\"><span class=\"fa fa-lg fa-link\"></span></a>";
-				$table_body .= "</td>";
-				$table_body .= "</tr>";
-
-			}
-
-		} while($row_styles = mysqli_fetch_assoc($styles));
-	}
 }
 
 if ($section != "step7") { ?>
@@ -232,7 +104,7 @@ if ($section != "step7") { ?>
 	$(document).ready(function() {
 		$('#sortable').dataTable( {
 			"bPaginate" : false,
-			"sDom": 'rt',
+			"sDom": 'rft',
 			"bStateSave" : false,
 			"bLengthChange" : false,
 			"aaSorting": <?php echo $sorting_default; ?>,
@@ -264,7 +136,7 @@ function checkUncheckAll(theElement) {
  <tr>
   <th><input type="checkbox" name="checkall" onclick="checkUncheckAll(this);"/></th>
   <th>Style Name</th>
-  <th><?php if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) echo "Overall Category"; else echo "#"; ?></th>
+  <th><?php if (strpos($_SESSION['prefsStyleSet'],"BJCP") === false) echo "Overall Category"; else echo "#"; ?></th>
   <th>Style Type</th>
   <th>Requirements</th>
   <th class="hidden-print">Actions</th>
@@ -290,7 +162,6 @@ function checkUncheckAll(theElement) {
 $style_type_2 = style_type($row_styles['brewStyleType'],"1","bcoe");
 ?>
 <form data-toggle="validator" role="form" class="form-horizontal" method="post" action="<?php echo $base_url; ?>includes/process.inc.php?section=<?php echo $section; ?>&amp;action=<?php echo $action; ?>&amp;dbTable=<?php echo $styles_db_table; ?>&amp;go=<?php echo $go; if ($action == "edit") echo "&amp;id=".$id; ?>" id="form1" name="form1">
-
 <div class="form-group"><!-- Form Group REQUIRED Text Input -->
 	<label for="brewStyle" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">Name</label>
 	<div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
@@ -302,20 +173,20 @@ $style_type_2 = style_type($row_styles['brewStyleType'],"1","bcoe");
         <div class="help-block with-errors"></div>
 	</div>
 </div><!-- ./Form Group -->
-
 <div class="form-group"><!-- Form Group REQUIRED Select -->
 	<label for="brewStyleType" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">Style Type</label>
 	<div class="col-lg-6 col-md-6 col-sm-8 col-xs-12 has-warning">
 	<!-- Input Here -->
-	<select class="selectpicker" name="brewStyleType" id="brewStyleType" onclick="craateUserJsObject.ShowMeadCider();" data-size="10" data-width="auto">
-        <?php do { ?>
+	<select class="selectpicker" name="brewStyleType" id="brewStyleType" data-size="10" data-width="auto">
+        <?php do {
+        if ($row_style_type['styleTypeName'] != "Mead/Cider") { ?>
         <option value="<?php echo $row_style_type['id']; ?>" <?php if (($action == "edit") && ($row_styles['brewStyleType'] == $row_style_type['id'])) echo "SELECTED"; ?>><?php echo $row_style_type['styleTypeName']; ?></option>
-    	<?php } while ($row_style_type = mysqli_fetch_assoc($style_type)); ?>
+    	<?php }
+    	} while ($row_style_type = mysqli_fetch_assoc($style_type)); ?>
 	</select>
 	<span id="helpBlock" class="help-block"><a class="btn btn-sm btn-primary" href="<?php echo $base_url; ?>index.php?section=admin&amp;go=style_types&amp;action=add"><span class="fa fa-plus-circle"></span> Add a Style Type</a></span>
 	</div>
 </div><!-- ./Form Group -->
-
 <div class="form-group"><!-- Form Group Radio INLINE -->
 	<label for="brewStyleReqSpec" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">Required Info</label>
 	<div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
@@ -325,12 +196,11 @@ $style_type_2 = style_type($row_styles['brewStyleType'],"1","bcoe");
 				<input type="radio" name="brewStyleReqSpec" value="1" id="brewStyleReqSpec_0" <?php if ($row_styles['brewStyleReqSpec'] == 1) echo "CHECKED"; ?> />Yes
 			</label>
 			<label class="radio-inline">
-				<input type="radio" name="brewStyleReqSpec" value="0" id="brewStyleReqSpec_1" <?php if (($action == "add") ||  ($row_styles['brewStyleReqSpec'] == 0)) echo "CHECKED"; ?> />No
+				<input type="radio" name="brewStyleReqSpec" value="0" id="brewStyleReqSpec_1" <?php if (($action == "add") || ($row_styles['brewStyleReqSpec'] == 0)) echo "CHECKED"; ?> />No
 			</label>
 		</div>
 	</div>
 </div><!-- ./Form Group -->
-
 <div id="mead-cider">
 	<div class="form-group"><!-- Form Group Radio INLINE -->
 		<label for="brewStyleCarb" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">Require Carbonation</label>
@@ -343,10 +213,10 @@ $style_type_2 = style_type($row_styles['brewStyleType'],"1","bcoe");
 				<label class="radio-inline">
 					<input type="radio" name="brewStyleCarb" value="0" id="brewStyleCarb_1" <?php if (($action == "add") || (($action == "edit") && ($row_styles['brewStyleCarb'] == 0))) echo "CHECKED"; ?> />No
 				</label>
+				<div class="help-block with-errors"></div>
 			</div>
 		</div>
 	</div><!-- ./Form Group -->
-
 	<div class="form-group"><!-- Form Group Radio INLINE -->
 		<label for="brewStyleSweet" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">Require Sweetness</label>
 		<div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
@@ -359,11 +229,10 @@ $style_type_2 = style_type($row_styles['brewStyleType'],"1","bcoe");
 					<input type="radio" name="brewStyleSweet" value="0" id="brewStyleSweet_1" <?php if (($action == "add") || (($action == "edit") && ($row_styles['brewStyleSweet'] == 0))) echo "CHECKED"; ?> />No
 				</label>
 			</div>
+			<div class="help-block with-errors"></div>
 		</div>
 	</div><!-- ./Form Group -->
-
 </div>
-
 <div id="mead">
 	<div class="form-group"><!-- Form Group Radio INLINE -->
 		<label for="brewStyleStrength" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">Require Strength</label>
@@ -377,26 +246,30 @@ $style_type_2 = style_type($row_styles['brewStyleType'],"1","bcoe");
 					<input type="radio" name="brewStyleStrength" value="0" id="brewStyleStrength_1" <?php if (($action == "add") || (($action == "edit") && ($row_styles['brewStyleStrength'] == 0))) echo "CHECKED"; ?> />No
 				</label>
 			</div>
+			<div class="help-block with-errors"></div>
 		</div>
 	</div><!-- ./Form Group -->
 </div>
 <div id="brewStyleEntry">
-
 <div class="form-group"><!-- Form Group NOT-REQUIRED Text Area -->
 	<label for="brewStyleEntry" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">Entry Info</label>
 	<div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
 		<!-- Input Here -->
-		<textarea class="form-control" name="brewStyleEntry" rows="6"><?php if ($action == "edit") echo $row_styles['brewStyleEntry']; ?></textarea>
+		<textarea class="form-control" name="brewStyleEntry" id="brewStyleEntryTextArea" rows="6"><?php if ($action == "edit") echo $row_styles['brewStyleEntry']; ?></textarea>
+		<div class="help-block with-errors"></div>
+		<div class="help-block"><strong class="text-danger">Required:</strong> provide requirements for entry (e.g., <em>Entrant must specify yeast strain(s) used</em>, etc.).</div>
 	 </div>
 </div><!-- ./Form Group -->
 <div class="form-group"><!-- Form Group NOT-REQUIRED Text Area -->
 	<label for="brewStyleInfo" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">Description</label>
 	<div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
 		<!-- Input Here -->
-		<textarea class="form-control" name="brewStyleInfo" rows="6"><?php if ($action == "edit") echo $row_styles['brewStyleInfo']; ?></textarea>
+		<textarea class="form-control" name="brewStyleInfo" id="brewStyleInfoTextArea" rows="6"><?php if ($action == "edit") echo $row_styles['brewStyleInfo']; ?></textarea>
+		<div class="help-block"><strong class="text-primary">Optional:</strong> provide a short description of the style.</div>
 	 </div>
-</div><!-- ./Form Group -->
 
+</div><!-- ./Form Group -->
+	</div>
 <div class="form-group"><!-- Form Group NOT REQUIRED Text Input -->
 	<label for="brewStyleOG" class="col-lg-2 col-md-3 col-sm-4 col-xs-12 control-label">OG Minimum</label>
 	<div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
@@ -504,22 +377,6 @@ $style_type_2 = style_type($row_styles['brewStyleType'],"1","bcoe");
 include (INCLUDES.'form_js.inc.php');
 
 } ?>
-<?php if (($action == "default") && ($filter == "judging") && ($bid == "default")) { ?>
-<table>
- <tr>
-   <td class="dataLabel">Choose a judging location:</td>
-   <td class="data">
-   <select class="selectpicker" name="judge_loc" id="judge_loc" onchange="jumpMenu('self',this,0)" data-size="10" data-width="auto">
-	<option value=""></option>
-    <?php do { ?>
-	<option value="index.php?section=admin&amp;go=styles&amp;filter=judging&amp;bid=<?php echo $row_judging['id']; ?>"><?php  echo $row_judging['judgingLocName']." ("; echo getTimeZoneDateTime($_SESSION['prefsTimeZone'], $row_judging['judgingDate'], $_SESSION['prefsDateFormat'],  $_SESSION['prefsTimeFormat'], "long", "date-time").")"; ?></option>
-    <?php } while ($row_judging = mysqli_fetch_assoc($judging)); ?>
-  </select>
-  </td>
-</tr>
-</table>
-<?php } ?>
-
 <?php if (($action == "default") && ($filter == "orphans") && ($bid == "default")) { ?>
 <h3>Styles Without a Valid Style Type</h3>
 <?php

@@ -7,97 +7,7 @@
 
 if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) && (isset($_SESSION['userLevel']))) || ($section == "setup"))) {
 
-
-	// Gather, convert, and/or sanitize info from the form
-	if (isset($_POST['brewerJudgeID'])) {
-		$brewerJudgeID = strip_tags($_POST['brewerJudgeID']);
-		$brewerJudgeID = strtoupper($brewerJudgeID);
-	}
-	else $brewerJudgeID = "";
-
-	if (isset($_POST['brewerJudgeMead'])) $brewerJudgeMead = $_POST['brewerJudgeMead'];
-	else $brewerJudgeMead = "";
-
-	if (isset($_POST['brewerJudgeRank'])) $brewerJudgeRank = $_POST['brewerJudgeRank'];
-	else $brewerJudgeRank = "";
-
-	if (isset($_POST['brewerAHA'])) {
-		$brewerAHA = filter_var($_POST['brewerAHA'],FILTER_SANITIZE_NUMBER_INT);
-	}
-	else $brewerAHA = "";
-
-	if (isset($_POST['brewerClubs'])) {
-		include (INCLUDES.'constants.inc.php');
-		$brewerClubs = strip_tags($_POST['brewerClubs']);
-		$brewerClubsConcat = $brewerClubs."|".$brewerClubs;
-		if (!in_array($brewerClubsConcat,$club_array))  {
-			if (($_POST['brewerClubs'] == "Other") && (!empty($_POST['brewerClubsOther']))) {
-				$brewerClubs = strip_tags($_POST['brewerClubsOther']);
-				$brewerClubs = ucwords($brewerClubs);
-			}
-			else $brewerClubs = "";
-		}
-		else $brewerClubs = $brewerClubs;
-	}
-	else $brewerClubs = "";
-
-	$brewerPhone1 = strip_tags($_POST['brewerPhone1']);
-
-	if (isset($_POST['brewerPhone2'])) {
-		$brewerPhone2 = strip_tags($_POST['brewerPhone2']);
-	}
-	else $brewerPhone2 = "";
-
-	if (isset($_POST['brewerJudgeWaiver'])) $brewerJudgeWaiver = $_POST['brewerJudgeWaiver'];
-	else $brewerJudgeWaiver = "";
-
-	if (isset($_POST['brewerDropOff'])) $brewerDropOff = $_POST['brewerDropOff'];
-	else $brewerDropOff = "0";
-
-	if (isset($_POST['brewerBreweryName'])) {
-		$brewerBreweryName = strip_tags($_POST['brewerBreweryName']);
-		$brewerBreweryName = strtolower($brewerBreweryName);
-		$brewerBreweryName = ucwords($brewerBreweryName);
-	}
-	else $brewerBreweryName = "";
-
-	if (isset($_POST['brewerBreweryTTB'])) {
-		$brewerBreweryTTB = strip_tags($_POST['brewerBreweryTTB']);
-	}
-	else $brewerBreweryTTB = "";
-
-	if (isset($_POST['brewerJudge'])) $brewerJudge = $_POST['brewerJudge'];
-	else $brewerJudge = "";
-
-	if (isset($_POST['brewerSteward'])) $brewerSteward = $_POST['brewerSteward'];
-	else $brewerSteward = "";
-
-	if (isset($_POST['brewerStaff'])) $brewerStaff = $_POST['brewerStaff'];
-	else $brewerStaff = "";
-
-	if (isset($_POST['brewerJudgeExp'])) $brewerJudgeExp = $_POST['brewerJudgeExp'];
-	else $brewerJudgeExp = "";
-
-	if (isset($_POST['brewerJudgeNotes'])) {
-		$brewerJudgeNotes = strip_tags($_POST['brewerJudgeNotes']);
-	}
-	else $brewerJudgeNotes = "";
-
-	$first_name = strip_tags($_POST['brewerFirstName']);
-	$first_name = strtolower($first_name);
-	$first_name = ucwords($first_name);
-
-	$last_name = strip_tags($_POST['brewerLastName']);
-	$last_name = strtolower($last_name);
-	$last_name = ucwords($last_name);
-
-	$address = strip_tags($_POST['brewerAddress']);
-	$address = strtolower($address);
-	$address = ucwords($address);
-
-	$city = strip_tags($_POST['brewerCity']);
-	$city = strtolower($city);
-	$city = ucwords($city);
+	require(PROCESS.'process_brewer_info.inc.php');
 
 	if ($_SESSION['userLevel'] == 2) {
 
@@ -108,12 +18,11 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 
 		if ($id != $row_brewer_id['id']) {
 			$redirectGoTo = $base_url."index.php?section=list&msg=12";
-			header(sprintf("Location: %s", stripslashes($redirectGoTo)));
+			$redirect_go_to = sprintf("Location: %s", stripslashes($redirectGoTo));
 		}
 
 	}
 
-	require(DB.'common.db.php');
 	require(DB.'brewer.db.php');
 	require(DB.'judging_locations.db.php');
 
@@ -286,7 +195,7 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 					$result = mysqli_query($connection,$updateSQL) or die (mysqli_error($connection));
 					//echo $updateSQL."<br>";
 
-					$query_staff_org = sprintf("SELECT uid FROM %s WHERE uid='%s'",$prefix."staff",$_POST['Organizer']);
+					$query_staff_org = sprintf("SELECT uid FROM %s WHERE uid='%s'",$prefix."staff",$purifier->purify($_POST['Organizer']));
 					$staff_org = mysqli_query($connection,$query_staff_org) or die (mysqli_error($connection));
 					$row_staff_org = mysqli_fetch_assoc($staff_org);
 					$totalRows_staff_org = mysqli_num_rows($staff_org);
@@ -299,7 +208,7 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 				}
 
 				if ($_POST['Organizer'] == $row_org['uid']) {
-					$updateSQL = sprintf("UPDATE %s SET staff_organizer='1' WHERE uid='%s'", $prefix."staff", $_POST['Organizer']);
+					$updateSQL = sprintf("UPDATE %s SET staff_organizer='1' WHERE uid='%s'", $prefix."staff", $purifier->purify($_POST['Organizer']));
 					mysqli_real_escape_string($connection,$updateSQL);
 					$result = mysqli_query($connection,$updateSQL) or die (mysqli_error($connection));
 					//echo $updateSQL."<br>";
@@ -314,37 +223,21 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 		else $massUpdateGoTo = $base_url."index.php?section=admin&action=assign&go=judging&filter=".$filter."&msg=9";
 		$massUpdateGoTo = str_replace($pattern, "", $massUpdateGoTo);
 		//echo $massUpdateGoTo;
-		header(sprintf("Location: %s", stripslashes($massUpdateGoTo)));
+		$redirect_go_to = sprintf("Location: %s", stripslashes($massUpdateGoTo));
 
 	} // end if ($action == "update")
 
 	// --------------------------------------- Adding a Participant ----------------------------------------
 
 	if ($action == "add") {
-		if ($brewerJudge == "Y") {
-			if (($_POST['brewerJudgeLocation'] != "") && (is_array($_POST['brewerJudgeLocation']))) $location_pref1 = implode(",",$_POST['brewerJudgeLocation']);
-			elseif (($_POST['brewerJudgeLocation'] != "") && (!is_array($_POST['brewerJudgeLocation']))) $location_pref1 = $_POST['brewerJudgeLocation'];
-
-		}
-		else $location_pref1 = "";
-
-		if ($brewerSteward == "Y") {
-			if (($_POST['brewerStewardLocation'] != "") && (is_array($_POST['brewerStewardLocation']))) $location_pref2 = implode(",",$_POST['brewerStewardLocation']);
-			elseif (($_POST['brewerJudgeLocation'] != "") && (!is_array($_POST['brewerStewardLocation']))) $location_pref2 = $_POST['brewerStewardLocation'];
-		}
-		else $location_pref2 = "";
-
-		if ($brewerJudgeRank != "") $rank = implode(",",$brewerJudgeRank); else $rank = "";
 
 		$query_user = sprintf("SELECT id FROM $users_db_table WHERE id = '%s'", $_POST['uid']);
 		$user = mysqli_query($connection,$query_user) or die (mysqli_error($connection));
 		$row_user = mysqli_fetch_assoc($user);
 		$totalRows_user = mysqli_num_rows($user);
 
-
-
 		if ($totalRows_user == 0) {
-			//header(sprintf("Location: %s", $base_url."index.php?section=brewer&go=".$go."&msg=2"));
+			//$redirect_go_to = sprintf("Location: %s", $base_url."index.php?section=brewer&go=".$go."&msg=2");
 			$updateSQL = sprintf("UPDATE $users_db_table SET user_name='%s' WHERE id='%s'",
 						   GetSQLValueString(filter_var($_POST['brewerEmail'],FILTER_SANITIZE_EMAIL), "text"),
 						   GetSQLValueString($_POST['uid'], "text"));
@@ -390,7 +283,9 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 				  brewerStaff,
 				  brewerBreweryName,
 
-				  brewerBreweryTTB
+				  brewerBreweryTTB,
+				  brewerJudgeCider,
+				  brewerProAm
 
 				) VALUES (
 				%s, %s, %s, %s, %s,
@@ -398,14 +293,14 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 				%s, %s, %s, %s, %s,
 				%s, %s, %s, %s, %s,
 				%s, %s, %s, %s, %s,
-				%s)",
+				%s, %s, %s)",
 							   GetSQLValueString($_POST['uid'], "int"),
 							   GetSQLValueString($first_name, "text"),
 							   GetSQLValueString($last_name, "text"),
 							   GetSQLValueString($address, "text"),
 							   GetSQLValueString($city, "text"),
-							   GetSQLValueString(strip_tags($_POST['brewerState']), "text"),
-							   GetSQLValueString(strip_tags($_POST['brewerZip']), "text"),
+							   GetSQLValueString($state, "text"),
+							   GetSQLValueString(sterilize($_POST['brewerZip']), "text"),
 							   GetSQLValueString($_POST['brewerCountry'], "text"),
 							   GetSQLValueString($brewerPhone1, "text"),
 							   GetSQLValueString($brewerPhone2, "text"),
@@ -424,7 +319,9 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 							   GetSQLValueString($brewerJudgeNotes, "text"),
 							   GetSQLValueString($brewerStaff, "text"),
 							   GetSQLValueString($brewerBreweryName, "text"),
-							   GetSQLValueString($brewerBreweryTTB, "text")
+							   GetSQLValueString($brewerBreweryTTB, "text"),
+							   GetSQLValueString($brewerJudgeCider, "text"),
+							   GetSQLValueString($_POST['brewerProAm'], "int")
 				);
 
 				// only if added by an admin.
@@ -481,21 +378,24 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 				  brewerJudgeNotes,
 				  brewerStaff,
 				  brewerBreweryName,
-				  brewerBreweryTTB
+				  brewerBreweryTTB,
+				  brewerJudgeCider,
+				  brewerProAm
 
 				) VALUES (
 				%s, %s, %s, %s, %s,
 				%s, %s, %s, %s, %s,
 				%s, %s, %s, %s, %s,
 				%s, %s, %s, %s, %s,
-				%s, %s, %s, %s, %s)",
+				%s, %s, %s, %s, %s
+				%s. %s)",
 							   GetSQLValueString($_POST['uid'], "int"),
 							   GetSQLValueString($first_name, "text"),
 							   GetSQLValueString($last_name, "text"),
 							   GetSQLValueString($address, "text"),
 							   GetSQLValueString($city, "text"),
-							   GetSQLValueString(strip_tags($_POST['brewerState']), "text"),
-							   GetSQLValueString(strip_tags($_POST['brewerZip']), "text"),
+							   GetSQLValueString($state, "text"),
+							   GetSQLValueString(sterilize($_POST['brewerZip']), "text"),
 							   GetSQLValueString($_POST['brewerCountry'], "text"),
 							   GetSQLValueString($_POST['brewerPhone1'], "text"),
 							   GetSQLValueString($brewerPhone2, "text"),
@@ -513,7 +413,9 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 							   GetSQLValueString($brewerJudgeNotes, "text"),
 							   GetSQLValueString($brewerStaff, "text"),
 							   GetSQLValueString($brewerBreweryName, "text"),
-							   GetSQLValueString($brewerBreweryTTB, "text")
+							   GetSQLValueString($brewerBreweryTTB, "text"),
+							   GetSQLValueString($brewerJudgeMead, "text"),
+							   GetSQLValueString($_POST['brewerProAm'], "int")
 							   );
 			}
 			//echo $insertSQL;
@@ -553,7 +455,7 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 
 		$pattern = array('\'', '"');
 		$insertGoTo = str_replace($pattern, "", $insertGoTo);
-		header(sprintf("Location: %s", stripslashes($insertGoTo)));
+		$redirect_go_to = sprintf("Location: %s", stripslashes($insertGoTo));
 
 		}
 
@@ -563,44 +465,9 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 	if ($action == "edit") {
 
 
-		// Check whether the id passed belongs to the current user; if not, redirect; if so, continue.
-		// Does not apply to admins
+		// Check for and clear assignments in staff DB table and judge assignments table if entrant
+		// indicates they do not want to judge, steward, or staff
 
-		if ($brewerJudge == "Y") {
-			if ($_POST['brewerJudgeLocation'] != "") {
-				if (is_array($_POST['brewerJudgeLocation'])) $location_pref1 = implode(",",$_POST['brewerJudgeLocation']);
-				else $location_pref1 = $_POST['brewerJudgeLocation'];
-			}
-		}
-		else $location_pref1 = "";
-
-		if ($brewerSteward == "Y") {
-			if ($_POST['brewerStewardLocation'] != "") {
-				if (is_array($_POST['brewerStewardLocation'])) $location_pref2 = implode(",",$_POST['brewerStewardLocation']);
-				else $location_pref2 = $_POST['brewerStewardLocation'];
-			}
-		}
-		else $location_pref2 = "";
-
-		if (isset($_POST['brewerJudgeLikes'])) {
-			if (is_array($_POST['brewerJudgeLikes'])) $likes = implode(",",$_POST['brewerJudgeLikes']);
-			else $likes = $_POST['brewerJudgeLikes'];
-			}
-		else $likes = "";
-
-		if (isset($_POST['brewerJudgeDislikes'])) {
-			if (is_array($_POST['brewerJudgeDislikes'])) $dislikes = implode(",",$_POST['brewerJudgeDislikes']);
-			else $dislikes = $_POST['brewerJudgeDislikes'];
-			}
-		else $dislikes = "";
-
-		if (isset($brewerJudgeRank)) {
-			if (is_array($brewerJudgeRank)) $rank = implode(",",$brewerJudgeRank);
-			else $rank = $brewerJudgeRank;
-		}
-		else $rank = "";
-
-		// Check for and clear assignments in staff DB table and judge assignments table if
 		if ($brewerJudge == "N") {
 
 			$query_staff_assign = sprintf("SELECT id,uid,staff_judge FROM %s WHERE uid='%s'",$prefix."staff",$_POST['uid']);
@@ -642,7 +509,6 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 			}
 
 		}
-
 
 		if ($brewerSteward == "N") {
 
@@ -719,15 +585,17 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 			brewerJudgeWaiver=%s,
 			brewerStaff=%s,
 			brewerBreweryName=%s,
-			brewerBreweryTTB=%s
+			brewerBreweryTTB=%s,
+			brewerJudgeCider=%s,
+			brewerProAm=%s
 			",
-							   GetSQLValueString($_POST['uid'], "int"),
+							   GetSQLValueString(sterilize($_POST['uid']), "int"),
 							   GetSQLValueString($first_name, "text"),
 							   GetSQLValueString($last_name, "text"),
 							   GetSQLValueString($address, "text"),
 							   GetSQLValueString($city, "text"),
-							   GetSQLValueString(strip_tags($_POST['brewerState']), "text"),
-							   GetSQLValueString(strip_tags($_POST['brewerZip']), "text"),
+							   GetSQLValueString($state, "text"),
+							   GetSQLValueString(sterilize($_POST['brewerZip']), "text"),
 							   GetSQLValueString($_POST['brewerCountry'], "text"),
 							   GetSQLValueString($_POST['brewerPhone1'], "text"),
 							   GetSQLValueString($brewerPhone2, "text"),
@@ -748,7 +616,9 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 							   GetSQLValueString($judgeWaiver, "text"),
 							   GetSQLValueString($brewerStaff, "text"),
 							   GetSQLValueString($brewerBreweryName, "text"),
-							   GetSQLValueString($brewerBreweryTTB, "text")
+							   GetSQLValueString($brewerBreweryTTB, "text"),
+							   GetSQLValueString($brewerJudgeMead, "text"),
+							   GetSQLValueString($_POST['brewerProAm'], "int")
 							   );
 		// Numbers 999999994 through 999999999 are reserved for NHC applications.
 		if (($brewerAHA < "999999994") || ($brewerAHA == "")) {
@@ -757,15 +627,17 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 		$updateSQL .= sprintf(" WHERE id=%s",GetSQLValueString($id, "int"));
 		mysqli_real_escape_string($connection,$updateSQL);
 		$result = mysqli_query($connection,$updateSQL) or die (mysqli_error($connection));
+		//echo $updateSQL."<br>";
+		//exit;
 
 		if (isset($_POST['userQuestion'])) {
-			$updateSQL = sprintf("UPDATE $users_db_table SET userQuestion=%s WHERE id=%s",GetSQLValueString($_POST['userQuestion'],"text"),GetSQLValueString($_SESSION['user_id'],"int"));
+			$updateSQL = sprintf("UPDATE $users_db_table SET userQuestion=%s WHERE id=%s",GetSQLValueString($purifier->purify($_POST['userQuestion']),"text"),GetSQLValueString($_SESSION['user_id'],"int"));
 			mysqli_real_escape_string($connection,$updateSQL);
 			$result = mysqli_query($connection,$updateSQL) or die (mysqli_error($connection));
 		}
 
 		if (isset($_POST['userQuestionAnswer'])) {
-			$updateSQL = sprintf("UPDATE $users_db_table SET userQuestionAnswer=%s WHERE id=%s",GetSQLValueString($_POST['userQuestionAnswer'],"text"),GetSQLValueString($_SESSION['user_id'],"int"));
+			$updateSQL = sprintf("UPDATE $users_db_table SET userQuestionAnswer=%s WHERE id=%s",GetSQLValueString($purifier->purify($_POST['userQuestionAnswer']),"text"),GetSQLValueString($_SESSION['user_id'],"int"));
 			mysqli_real_escape_string($connection,$updateSQL);
 			$result = mysqli_query($connection,$updateSQL) or die (mysqli_error($connection));
 		}
@@ -777,9 +649,6 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 		mysqli_real_escape_string($connection,$updateSQL);
 		$result = mysqli_query($connection,$updateSQL) or die (mysqli_error($connection));
 
-		//echo $updateSQL."<br>";
-		//exit;
-
 		if ($go == "register") $updateGoTo = $base_url."index.php?section=brew&msg=2";
 		elseif (($go == "judge") && ($filter == "default")) $updateGoTo = $base_url."index.php?section=list&go=".$go."&filter=default&msg=7";
 		elseif (($go == "judge") && ($filter != "default")) $updateGoTo = $base_url."index.php?section=admin&go=participants&msg=2";
@@ -789,14 +658,13 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 		$pattern = array('\'', '"');
 		$updateGoTo = str_replace($pattern, "", $updateGoTo);
 
-		header(sprintf("Location: %s", stripslashes($updateGoTo)));
+		$redirect_go_to = sprintf("Location: %s", stripslashes($updateGoTo));
 
 	}
 
 } else {
 
-	header(sprintf("Location: %s", $base_url."index.php?msg=98"));
-	exit;
+	$redirect_go_to = sprintf("Location: %s", $base_url."index.php?msg=98");
 
 }
 ?>

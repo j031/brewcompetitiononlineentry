@@ -2,6 +2,12 @@
 
 if ($setup_free_access == TRUE) {
 
+	// Clear out any previous sessions. Just in case.
+	session_unset();
+	session_destroy();
+	session_write_close();
+	setcookie(session_name($prefix_session),'',0,'/');
+
 	$output = "";
 
 	if ($action == "default") {
@@ -23,7 +29,7 @@ if ($setup_free_access == TRUE) {
 			}
 		}
 
-		$output .= "<a class=\"btn btn-lg btn-primary\" href=\"".$base_url."setup.php?section=step0&amp;action=install-db\" data-confirm=\"Are you sure? This will install all database elements.\"><span class=\"fa fa-lg fa-download\"></span> Install DB Tables and Data</a>";
+		$output .= "<a class=\"btn btn-lg btn-primary hide-loader\" href=\"".$base_url."setup.php?section=step0&amp;action=install-db\" data-confirm=\"Are you sure? This will install all database elements.\"><span class=\"fa fa-lg fa-download\"></span> Install DB Tables and Data</a>";
 
 		}
 
@@ -56,10 +62,10 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$archive_db_table` (
-			`id` int(8) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`archiveProEdition` tinyint(1) DEFAULT NULL,
 			`archiveStyleSet` varchar(25) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-			`archiveBrewingTableName` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+			`archiveScoresheet` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`archiveSuffix` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci COLLATE utf8mb4_unicode_ci;
@@ -79,7 +85,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$brewer_db_table` (
-			`id` int(8) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`uid` int(8) DEFAULT NULL,
 			`brewerFirstName` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`brewerLastName` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -97,6 +103,7 @@ if ($setup_free_access == TRUE) {
 			`brewerJudge` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`brewerJudgeID` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`brewerJudgeMead` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+			`brewerJudgeCider` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`brewerJudgeRank` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`brewerJudgeLikes` mediumtext COLLATE utf8mb4_unicode_ci,
 			`brewerJudgeDislikes` mediumtext COLLATE utf8mb4_unicode_ci,
@@ -128,7 +135,7 @@ if ($setup_free_access == TRUE) {
 		// -------------------
 
 		$sql = "CREATE TABLE IF NOT EXISTS `$brewing_db_table` (
-			`id` int(8) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`brewName` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`brewStyle` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`brewCategory` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -504,7 +511,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$contacts_db_table` (
-			`id` int(8) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`contactFirstName` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`contactLastName` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`contactPosition` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -526,7 +533,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$contest_info_db_table` (
-			`id` int(1) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`contestName` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`contestHost` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`contestHostWebsite` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -544,8 +551,8 @@ if ($setup_free_access == TRUE) {
 			`contestAwardsLocTime` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`contestShippingOpen` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`contestShippingDeadline` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-			`contestEntryFee` int(11) DEFAULT NULL,
-			`contestEntryFee2` int(11) DEFAULT NULL,
+			`contestEntryFee` float(6,2) DEFAULT NULL,
+			`contestEntryFee2` float(6,2) DEFAULT NULL,
 			`contestEntryFeeDiscount` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`contestEntryFeeDiscountNum` char(4) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`contestDropoffOpen` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -580,7 +587,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$drop_off_db_table` (
-			`id` int(8) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`dropLocation` mediumtext COLLATE utf8mb4_unicode_ci,
 			`dropLocationName` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`dropLocationPhone` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -603,7 +610,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE `$judging_assignments_db_table` (
-			`id` int(11) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`bid` int(11) DEFAULT NULL COMMENT 'id from brewer',
 			`assignment` char(1) COLLATE utf8_unicode_ci DEFAULT NULL,
 			`assignTable` int(11) DEFAULT NULL COMMENT 'id from judging_tables',
@@ -628,7 +635,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$judging_flights_db_table` (
-			`id` int(8) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`flightTable` int(8) DEFAULT NULL COMMENT 'id of Table from tables',
 			`flightNumber` int(8) DEFAULT NULL,
 			`flightEntryID` int(11) DEFAULT NULL COMMENT 'id of entry from the brewing table',
@@ -650,7 +657,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$judging_locations_db_table` (
-			`id` int(8) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`judgingDate` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`judgingTime` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`judgingLocName` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -674,7 +681,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$judging_preferences_db_table` (
-			`id` int(11) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`jPrefsQueued` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`jPrefsFlightEntries` int(11) DEFAULT NULL COMMENT 'Maximum amount of entries per flight',
 			`jPrefsMaxBOS` int(11) DEFAULT NULL COMMENT 'Maximum amount of places awarded for each BOS style type',
@@ -707,12 +714,12 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$judging_scores_db_table` (
-			`id` int(11) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`eid` int(11) DEFAULT NULL COMMENT 'entry id from brewing table',
 			`bid` int(11) DEFAULT NULL COMMENT 'brewer id from brewer table',
 			`scoreTable` int(11) DEFAULT NULL COMMENT 'id of table from judging_tables table',
 			`scoreEntry` float DEFAULT NULL COMMENT 'Numerical score assigned by judges',
-			`scorePlace` int(11) DEFAULT NULL COMMENT 'place of entry as assigned by judges',
+			`scorePlace` varchar(3) DEFAULT NULL COMMENT 'place of entry as assigned by judges',
 			`scoreType` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`scoreMiniBOS` tinyint(1) DEFAULT NULL COMMENT 'Did the entry go to the MiniBOS? 1=Yes, 0=No',
 			PRIMARY KEY (`id`)
@@ -733,12 +740,12 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$judging_scores_bos_db_table` (
-			`id` int(11) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`eid` int(11) DEFAULT NULL COMMENT 'entry id from brewing table',
 			`bid` int(11) DEFAULT NULL COMMENT 'brewer id from brewer table',
 			`scoreEntry` varchar(3) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`scorePlace` varchar(3) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-			`scoreType` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+			`scoreType` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 		";
@@ -757,7 +764,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$judging_tables_db_table` (
-			`id` int(8) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`tableName` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`tableStyles` mediumtext COLLATE utf8mb4_unicode_ci,
 			`tableNumber` int(5) DEFAULT NULL COMMENT 'User defined for sorting',
@@ -780,7 +787,7 @@ if ($setup_free_access == TRUE) {
 		// -------------------
 
 		$sql = "CREATE TABLE IF NOT EXISTS `$mods_db_table` (
-			`id` int(11) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`mod_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`mod_type` tinyint(2) DEFAULT NULL COMMENT 'Type of module: 0=informational 1=report 2=export 3=other',
 			`mod_extend_function` tinyint(2) DEFAULT NULL COMMENT 'If the custom module extends a core function. 0=all 1=home 2=rules 3=volunteer 4=sponsors 5=contact 6=register 7=pay 8=list 9=admin',
@@ -803,7 +810,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$preferences_db_table` (
-			`id` int(8) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`prefsTemp` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`prefsWeight1` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`prefsWeight2` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -817,7 +824,7 @@ if ($setup_free_access == TRUE) {
 			`prefsCheck` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`prefsCheckPayee` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`prefsTransFee` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-			`prefsGoogle` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+			`prefsCAPTCHA` tinyint(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`prefsGoogleAccount` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`prefsSponsors` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`prefsSponsorLogos` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -829,6 +836,21 @@ if ($setup_free_access == TRUE) {
 			`prefsDisplaySpecial` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`prefsBOSMead` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`prefsBOSCider` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+			`prefsShowBestBrewer` int(1) DEFAULT NULL,
+			`prefsBestBrewerTitle` varchar(255) DEFAULT NULL,
+			`prefsShowBestClub` int(1) DEFAULT NULL,
+			`prefsBestClubTitle` varchar(255) DEFAULT NULL,
+			`prefsFirstPlacePts` int(1) DEFAULT 0,
+			`prefsSecondPlacePts` int(1) DEFAULT 0,
+			`prefsThirdPlacePts` int(1) DEFAULT 0,
+			`prefsFourthPlacePts` int(1) DEFAULT 0,
+			`prefsHMPts` int(1) DEFAULT 0,
+			`prefsTieBreakRule1` varchar(255) DEFAULT NULL,
+			`prefsTieBreakRule2` varchar(255) DEFAULT NULL,
+			`prefsTieBreakRule3` varchar(255) DEFAULT NULL,
+			`prefsTieBreakRule4` varchar(255) DEFAULT NULL,
+			`prefsTieBreakRule5` varchar(255) DEFAULT NULL,
+			`prefsTieBreakRule6` varchar(255) DEFAULT NULL,
 			`prefsEntryForm` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`prefsRecordLimit` int(11) DEFAULT '300' COMMENT 'User defined record limit for using DataTables vs. PHP paging',
 			`prefsRecordPaging` int(11) DEFAULT '100' COMMENT 'User defined per page record limit',
@@ -873,7 +895,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$special_best_data_db_table` (
-			`id` int(11) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`sid` int(11) DEFAULT NULL COMMENT 'relational to special_best_info table',
 			`bid` int(11) DEFAULT NULL COMMENT 'relational to brewer table - bid row',
 			`eid` int(11) DEFAULT NULL COMMENT 'relational to brewing table - id (entry number)',
@@ -896,7 +918,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$special_best_info_db_table` (
-			`id` int(11) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`sbi_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`sbi_description` mediumtext COLLATE utf8mb4_unicode_ci,
 			`sbi_places` int(11) DEFAULT NULL,
@@ -919,7 +941,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$sponsors_db_table` (
-			`id` int(8) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`sponsorName` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`sponsorURL` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`sponsorImage` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -944,7 +966,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$staff_db_table` (
-			`id` int(11) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`uid` int(11) DEFAULT NULL COMMENT 'user''s id from user table',
 			`staff_judge` tinyint(2) DEFAULT '0' COMMENT '0=no; 1=yes',
 			`staff_judge_bos` tinyint(2) DEFAULT '0' COMMENT '0=no; 1=yes',
@@ -973,7 +995,7 @@ if ($setup_free_access == TRUE) {
 
 		$updateSQL = "
 		CREATE TABLE ".$prefix."styles (
-			`id` int(8) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`brewStyleNum` varchar(3) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`brewStyle` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`brewStyleCategory` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -1242,7 +1264,7 @@ if ($setup_free_access == TRUE) {
 		$updateSQL .= "(147, 'B', 'Oatmeal Stout', 'Dark British Beer', '1.045', '1.065', '1.01', '1.018', '4.2', '5.9', '25', '40', '22', '40', 'Ale', 'A very dark, full-bodied, roasty, malty ale with a complementary oatmeal flavor. The sweetness, balance, and oatmeal impression can vary considerably.', 'http://bjcp.org/stylecenter.php', '16', 'Y', 'bcoe', 'BJCP2015', 0, 0, 0, 0, 'standard-strength, dark-color, top-fermented, british-isles, traditional-style, stout-family, balanced, roasty', 'Samuel Smith Oatmeal Stout, Young&rsquo;s Oatmeal Stout, McAuslan Oatmeal Stout, Maclay&rsquo;s Oat Malt Stout, Broughton Kinmount Willie Oatmeal Stout, Anderson Valley Barney Flats Oatmeal Stout, Troegs Oatmeal Stout, New Holland The Poet, Goose Island Oatmeal Stout, Wolaver&rsquo;s Oatmeal Stout.', ''), ";
 		$updateSQL .= "(148, 'C', 'Tropical Stout', 'Dark British Beer', '1.056', '1.075', '1.01', '1.018', '5.5', '8', '30', '50', '30', '40', 'Ale', 'A very dark, sweet, fruity, moderately strong ale with smooth roasty flavors without a burnt harshness. ', 'http://bjcp.org/stylecenter.php', '16', 'Y', 'bcoe', 'BJCP2015', 0, 0, 0, 0, 'high-strength, dark-color, top-fermented, british-isles, traditional-style, stout-family, malty, roasty, sweet', 'Lion Stout (Sri Lanka), Dragon Stout (Jamaica), ABC Stout (Singapore), Royal Extra &quot;The Lion Stout&quot; (Trinidad), Jamaica Stout (Jamaica).', ''), ";
 		$updateSQL .= "(149, 'D', 'Foreign Extra Stout', 'Dark British Beer', '1.056', '1.075', '1.01', '1.018', '6.5', '8', '50', '70', '30', '40', 'Ale', 'A very dark, moderately strong, fairly dry, stout with prominent roast flavors.', 'http://bjcp.org/stylecenter.php', '16', 'Y', 'bcoe', 'BJCP2015', 0, 0, 0, 0, 'high-strength, dark-color, top-fermented, british-isles, traditional-style, stout-family, balanced, roasty', 'Guinness Foreign Extra Stout, Ridgeway Foreign Export Stout, Coopers Best Extra Stout, Elysian Dragonstooth Stout.', ''), ";
-		$updateSQL .= "(150, 'A', 'English Strong Ale', 'Strong British Ale', '1.055', '1.08', '1.015', '1.022', '5.5', '8', '30', '60', '8', '22', 'Ale', 'An ale of respectable alcoholic strength, traditionally bottled-conditioned and cellared. Can have a wide range of interpretations, but most will have varying degrees of malty richness, late hops and bitterness, fruity esters, and alcohol warmth. Judges should allow for a significant range in character, as long as the beer is within the alcohol strength range and has an interesting &quot;English&quot; character, it likely fits the style. The malt and adjunct flavors and intensity can vary widely, but any combination should result in an agreeable palate experience.', 'http://bjcp.org/stylecenter.php', '17', 'Y', 'bcoe', 'BJCP2015', 0, 0, 0, 0, 'high-strength, amber-color, top-fermented, british-isles, traditional-style, strong-ale-family, malty', 'Fuller&rsquo;s 1845, Young&rsquo;s Special London Ale, Harvey&rsquo;s Elizabethan Ale, J.W. Lees Manchester Star, Sarah Hughes Dark Ruby Mild, Samuel Smith&rsquo;s Winter Welcome, Fuller&rsquo;s ESB, Adnams Broadside, Young&rsquo;s Winter Warmer.', ''); ";
+		$updateSQL .= "(150, 'A', 'British Strong Ale', 'Strong British Ale', '1.055', '1.08', '1.015', '1.022', '5.5', '8', '30', '60', '8', '22', 'Ale', 'An ale of respectable alcoholic strength, traditionally bottled-conditioned and cellared. Can have a wide range of interpretations, but most will have varying degrees of malty richness, late hops and bitterness, fruity esters, and alcohol warmth. Judges should allow for a significant range in character, as long as the beer is within the alcohol strength range and has an interesting &quot;English&quot; character, it likely fits the style. The malt and adjunct flavors and intensity can vary widely, but any combination should result in an agreeable palate experience.', 'http://bjcp.org/stylecenter.php', '17', 'Y', 'bcoe', 'BJCP2015', 0, 0, 0, 0, 'high-strength, amber-color, top-fermented, british-isles, traditional-style, strong-ale-family, malty', 'Fuller&rsquo;s 1845, Young&rsquo;s Special London Ale, Harvey&rsquo;s Elizabethan Ale, J.W. Lees Manchester Star, Sarah Hughes Dark Ruby Mild, Samuel Smith&rsquo;s Winter Welcome, Fuller&rsquo;s ESB, Adnams Broadside, Young&rsquo;s Winter Warmer.', ''); ";
 		mysqli_select_db($connection,$database);
 		mysqli_real_escape_string($connection,$updateSQL);
 		$result = mysqli_query($connection,$updateSQL) or die (mysqli_error($connection));
@@ -1388,7 +1410,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$style_types_db_table` (
-			`id` int(11) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`styleTypeName` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`styleTypeOwn` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`styleTypeBOS` char(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -1421,7 +1443,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$system_db_table` (
-			`id` int(11) NOT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`version` varchar(12) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 			`version_date` date DEFAULT NULL,
 			`data_check` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -1435,7 +1457,7 @@ if ($setup_free_access == TRUE) {
 		$result = mysqli_query($connection,$sql) or die (mysqli_error($connection));
 		$output .= "<li class=\"list-group-item\"><span class=\"fa fa-lg fa-check text-success\"></span> The <strong>System</strong> table was installed successfully.</li>";
 
-		$sql = "INSERT INTO `$system_db_table` (`id`, `version`, `version_date`, `data_check`,`setup`, `setup_last_step`) VALUES (1, '2.1.10.0', '2017-07-15', NOW( ),'0','0');";
+		$sql = "INSERT INTO `$system_db_table` (`id`, `version`, `version_date`, `data_check`,`setup`, `setup_last_step`) VALUES (1, '2.1.10.0', '".$current_version_date_display."', NOW( ),'0','0');";
 		mysqli_select_db($connection,$database);
 		mysqli_real_escape_string($connection,$sql);
 		$result = mysqli_query($connection,$sql) or die (mysqli_error($connection));
@@ -1449,7 +1471,7 @@ if ($setup_free_access == TRUE) {
 
 		$sql = "
 		CREATE TABLE IF NOT EXISTS `$users_db_table` (
-			`id` int(8) NOT NULL AUTO_INCREMENT,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`user_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
 			`password` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
 			`userLevel` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
@@ -1463,29 +1485,6 @@ if ($setup_free_access == TRUE) {
 		mysqli_select_db($connection,$database);
 		mysqli_real_escape_string($connection,$sql);
 		$result = mysqli_query($connection,$sql) or die (mysqli_error($connection));
-		 //echo "<p>".$sql."</p>";
-
-		if (HOSTED) {
-			$gh_user_name = "geoff@zkdigital.com";
-			$gh_password = "d9efb18ba2bc4a434ddf85013dbe58f8";
-			$random1 = random_generator(7,2);
-			$random2 = random_generator(7,2);
-			require(CLASSES.'phpass/PasswordHash.php');
-			$hasher = new PasswordHash(8, false);
-			$hash = $hasher->HashPassword($gh_password);
-			// For hosted accounts on brewcompetition.com and brewcomp.com
-			$sql = sprintf("INSERT INTO `%s` (`id`, `uid`, `brewerFirstName`, `brewerLastName`, `brewerAddress`, `brewerCity`, `brewerState`, `brewerZip`, `brewerCountry`, `brewerPhone1`, `brewerPhone2`, `brewerClubs`, `brewerEmail`, `brewerStaff`, `brewerSteward`, `brewerJudge`, `brewerJudgeID`, `brewerJudgeMead`, `brewerJudgeRank`, `brewerJudgeLikes`, `brewerJudgeDislikes`, `brewerJudgeLocation`, `brewerStewardLocation`, `brewerJudgeExp`, `brewerJudgeNotes`, `brewerAssignment`, `brewerJudgeWaiver`, `brewerDiscount`, `brewerJudgeBOS`, `brewerAHA`) VALUES
-			(NULL, 1, 'Geoff', 'Humphrey', '1234 Main Street', 'Anytown', 'CO', '80126', 'United States', '303-555-5555', '303-555-5555', NULL, '%s', 'N', 'N', 'N', 'A0000', NULL, 'Certified', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0);",$brewer_db_table,$gh_user_name);
-			mysqli_select_db($connection,$database);
-			mysqli_real_escape_string($connection,$sql);
-			$result = mysqli_query($connection,$sql) or die (mysqli_error($connection));
-
-			// For hosted accounts on brewcompetition.com or brewcomp.com
-			$sql = sprintf("INSERT INTO `%s` (`id`, `user_name`, `password`, `userLevel`, `userQuestion`, `userQuestionAnswer`,`userCreated`) VALUES (NULL, '%s', '%s', '0', '%s', '%s', NOW());", $users_db_table,$gh_user_name,$hash,$random1,$random2);
-			mysqli_select_db($connection,$database);
-			mysqli_real_escape_string($connection,$sql);
-			$result = mysqli_query($connection,$sql) or die (mysqli_error($connection));
-		}
 
 		$output .= "<li class=\"list-group-item\"><span class=\"fa fa-lg fa-check text-success\"></span> The <strong>Users</strong> table was installed successfully.</li>";
 
@@ -1493,18 +1492,21 @@ if ($setup_free_access == TRUE) {
 		$output .=  "</div>";
 
 
-		// ------------------------------
-		// Need to add DB structure check
-		// -------------------------------
+		/* -------------------------------------------------
+		 * Make sure all off-schedule updates have also
+		 * been instantiated.
+		 * -------------------------------------------------
+		 */
 
-
-		// -------------------------------
+		$output .=  "<h3>Other Installation Items</h3>";
+		$output .=  "<ul>";
+		include(UPDATE.'off_schedule_update.php');
+		$output .=  "</ul>";
 
 	}
 
 	//echo $output;
 
 }
-
 
 ?>

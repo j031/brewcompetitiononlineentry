@@ -7,24 +7,19 @@
 
 if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) && ($_SESSION['userLevel'] <= 1)) || ($section == "setup"))) {
 
+	$prefsGoogleAccount = "";
+	if ((isset($_POST['prefsGoogleAccount0'])) && (isset($_POST['prefsGoogleAccount1']))) $prefsGoogleAccount = $_POST['prefsGoogleAccount0']."|".$_POST['prefsGoogleAccount1'];
+
 	if (isset($_POST['prefsUSCLEx'])) $prefsUSCLEx = implode(",",$_POST['prefsUSCLEx']);
 	else  $prefsUSCLEx = "";
 
 	$prefsStyleSet = "";
+	$style_alert = FALSE;
 
+	$prefsStyleSet = sterilize($_POST['prefsStyleSet']);
 
-	if (strpos($_SESSION['prefsStyleSet'],"BABDB") !== false) {
-
-		$ba_styleSet_explodies = explode("|",$_SESSION['prefsStyleSet']);
-
-	}
-
-	if ((isset($_POST['prefsStyleSetAPIKey'])) && ($_POST['prefsStyleSet'] == "BABDB")) {
-		 $prefsStyleSet = $_POST['prefsStyleSet']."|".$_POST['prefsStyleSetAPIKey'];
-		 if (isset($ba_styleSet_explodies[2])) $prefsStyleSet .= "|".$ba_styleSet_explodies[2];
-	}
-
-	else $prefsStyleSet = $_POST['prefsStyleSet'];
+	if (!empty($_POST['prefsWinnerDelay'])) $prefsWinnerDelay = strtotime(sterilize($_POST['prefsWinnerDelay']));
+	else $prefsWinnerDelay = 2145916800;
 
 	if ($action == "add") {
 		$insertSQL = sprintf("INSERT INTO $preferences_db_table (
@@ -81,6 +76,29 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 		prefsShipping,
 		prefsPaypalIPN,
 		prefsProEdition,
+		prefsDisplaySpecial,
+
+		prefsShowBestBrewer,
+		prefsBestBrewerTitle,
+		prefsShowBestClub,
+		prefsBestClubTitle,
+		prefsFirstPlacePts,
+		prefsSecondPlacePts,
+		prefsThirdPlacePts,
+
+		prefsFourthPlacePts,
+		prefsHMPts,
+		prefsTieBreakRule1,
+		prefsTieBreakRule2,
+		prefsTieBreakRule3,
+
+		prefsTieBreakRule4,
+		prefsTieBreakRule5,
+		prefsTieBreakRule6,
+		prefsCAPTCHA,
+		prefsGoogleAccount,
+		prefsBestUseBOS,
+		prefsLanguage,
 		id
 
 		) VALUES (
@@ -92,62 +110,97 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 		%s, %s, %s, %s, %s,
 		%s, %s, %s, %s, %s,
 		%s, %s, %s, %s, %s,
+		%s, %s, %s, %s, %s,
+		%s, %s, %s, %s, %s,
+		%s, %s, %s, %s, %s,
+		%s, %s, %s, %s, %s,
 		%s, %s, %s, %s, %s)",
-							   GetSQLValueString($_POST['prefsTemp'], "text"),
-							   GetSQLValueString($_POST['prefsWeight1'], "text"),
-							   GetSQLValueString($_POST['prefsWeight2'], "text"),
-							   GetSQLValueString($_POST['prefsLiquid1'], "text"),
-							   GetSQLValueString($_POST['prefsLiquid2'], "text"),
 
-							   GetSQLValueString($_POST['prefsPaypal'], "text"),
-							   GetSQLValueString($_POST['prefsPaypalAccount'], "text"),
-							   GetSQLValueString($_POST['prefsCurrency'], "text"),
-							   GetSQLValueString($_POST['prefsCash'], "text"),
-							   GetSQLValueString($_POST['prefsCheck'], "text"),
+			GetSQLValueString(sterilize($_POST['prefsTemp']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsWeight1']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsWeight2']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsLiquid1']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsLiquid2']), "text"),
 
-							   GetSQLValueString($_POST['prefsCheckPayee'], "text"),
-							   GetSQLValueString($_POST['prefsTransFee'], "text"),
-							   GetSQLValueString($_POST['prefsSponsors'], "text"),
+			GetSQLValueString(sterilize($_POST['prefsPaypal']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsPaypalAccount']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsCurrency']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsCash']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsCheck']), "text"),
 
-							   GetSQLValueString($_POST['prefsSponsorLogos'], "text"),
-							   GetSQLValueString($_POST['prefsDisplayWinners'], "text"),
-							   GetSQLValueString($_POST['prefsWinnerDelay'], "text"),
+			GetSQLValueString(sterilize($_POST['prefsCheckPayee']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsTransFee']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsSponsors']), "text"),
 
-							   GetSQLValueString($_POST['prefsWinnerMethod'], "text"),
-							   GetSQLValueString($_POST['prefsEntryForm'], "text"),
-							   GetSQLValueString($_POST['prefsRecordLimit'], "int"),
-							   GetSQLValueString($_POST['prefsRecordPaging'], "int"),
+			GetSQLValueString(sterilize($_POST['prefsSponsorLogos']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsDisplayWinners']), "text"),
+			GetSQLValueString($prefsWinnerDelay, "text"),
 
-							   GetSQLValueString($_POST['prefsTheme'], "text"),
-							   GetSQLValueString($_POST['prefsDateFormat'], "text"),
-							   GetSQLValueString($_POST['prefsContact'], "text"),
-							   GetSQLValueString($_POST['prefsTimeZone'], "text"),
-							   GetSQLValueString($_POST['prefsEntryLimit'], "text"),
+			GetSQLValueString(sterilize($_POST['prefsWinnerMethod']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsEntryForm']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsRecordLimit']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsRecordPaging']), "int"),
 
-							   GetSQLValueString($_POST['prefsTimeFormat'], "text"),
-							   GetSQLValueString($_POST['prefsUserEntryLimit'], "int"),
-							   GetSQLValueString($_POST['prefsUserSubCatLimit'], "int"),
-							   GetSQLValueString($prefsUSCLEx, "text"),
-							   GetSQLValueString($_POST['prefsUSCLExLimit'], "int"),
+			GetSQLValueString(sterilize($_POST['prefsTheme']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsDateFormat']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsContact']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsTimeZone']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsEntryLimit']), "text"),
 
-							   GetSQLValueString($_POST['prefsPayToPrint'], "text"),
-							   GetSQLValueString($_POST['prefsHideRecipe'], "text"),
-							   GetSQLValueString($_POST['prefsUseMods'], "text"),
-							   GetSQLValueString($_POST['prefsSEF'], "text"),
-							   GetSQLValueString($_POST['prefsSpecialCharLimit'], "int"),
-							   GetSQLValueString($prefsStyleSet, "text"),
-							   GetSQLValueString($_POST['prefsAutoPurge'], "text"),
-							   GetSQLValueString($_POST['prefsEntryLimitPaid'], "int"),
-							   GetSQLValueString($_POST['prefsEmailRegConfirm'], "int"),
-							   GetSQLValueString($_POST['prefsSpecific'], "int"),
-							   GetSQLValueString($_POST['prefsDropOff'], "int"),
-							   GetSQLValueString($_POST['prefsShipping'], "int"),
-							   GetSQLValueString($_POST['prefsPaypalIPN'], "int"),
-							   GetSQLValueString($_POST['prefsProEdition'], "int"),
-							   GetSQLValueString($id, "int"));
+			GetSQLValueString(sterilize($_POST['prefsTimeFormat']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsUserEntryLimit']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsUserSubCatLimit']), "int"),
+			GetSQLValueString($prefsUSCLEx, "text"),
+			GetSQLValueString(sterilize($_POST['prefsUSCLExLimit']), "int"),
+
+			GetSQLValueString(sterilize($_POST['prefsPayToPrint']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsHideRecipe']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsUseMods']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsSEF']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsSpecialCharLimit']), "int"),
+			GetSQLValueString($prefsStyleSet, "text"),
+			GetSQLValueString(sterilize($_POST['prefsAutoPurge']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsEntryLimitPaid']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsEmailRegConfirm']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsSpecific']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsDropOff']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsShipping']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsPaypalIPN']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsProEdition']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsDisplaySpecial']), "text"),
+
+			GetSQLValueString(sterilize($_POST['prefsShowBestBrewer']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsBestBrewerTitle']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsShowBestClub']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsBestClubTitle']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsFirstPlacePts']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsSecondPlacePts']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsThirdPlacePts']), "int"),
+
+			GetSQLValueString(sterilize($_POST['prefsFourthPlacePts']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsHMPts']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsTieBreakRule1']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsTieBreakRule2']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsTieBreakRule3']), "text"),
+
+			GetSQLValueString(sterilize($_POST['prefsTieBreakRule4']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsTieBreakRule5']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsTieBreakRule6']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsCAPTCHA']), "text"),
+			GetSQLValueString(sterilize($prefsGoogleAccount), "text"),
+			GetSQLValueString($_POST['prefsBestUseBOS'], "int"),
+			GetSQLValueString(sterilize($_POST['prefsLanguage']), "text"),
+			GetSQLValueString($id, "int"));
 
 			mysqli_real_escape_string($connection,$insertSQL);
 			$result = mysqli_query($connection,$insertSQL) or die (mysqli_error($connection));
+
+			// Update style set of any custom styles to chosen style set
+			// Safeguards against a bug introduced in 2.1.13 scripting
+			$updateSQL = sprintf("UPDATE `%s` SET brewStyleVersion='%s' WHERE brewStyleOwn='custom'",$prefix."styles",$prefsStyleSet);
+			mysqli_select_db($connection,$database);
+			mysqli_real_escape_string($connection,$updateSQL);
+			$result = mysqli_query($connection,$updateSQL);
 
 			if ($_POST['prefsPaypalIPN'] == 1) {
 
@@ -200,7 +253,7 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 
 			$pattern = array('\'', '"');
 			$insertGoTo = str_replace($pattern, "", $insertGoTo);
-			header(sprintf("Location: %s", stripslashes($insertGoTo)));
+			$redirect_go_to = sprintf("Location: %s", stripslashes($insertGoTo));
 
 	}
 
@@ -258,66 +311,119 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 		prefsDropOff=%s,
 		prefsShipping=%s,
 		prefsPaypalIPN=%s,
-		prefsProEdition=%s
+		prefsProEdition=%s,
+		prefsDisplaySpecial=%s,
+
+		prefsShowBestBrewer=%s,
+		prefsBestBrewerTitle=%s,
+		prefsShowBestClub=%s,
+		prefsBestClubTitle=%s,
+		prefsBestUseBOS=%s,
+		prefsFirstPlacePts=%s,
+		prefsSecondPlacePts=%s,
+		prefsThirdPlacePts=%s,
+
+		prefsFourthPlacePts=%s,
+		prefsHMPts=%s,
+		prefsTieBreakRule1=%s,
+		prefsTieBreakRule2=%s,
+		prefsTieBreakRule3=%s,
+
+		prefsTieBreakRule4=%s,
+		prefsTieBreakRule5=%s,
+		prefsTieBreakRule6=%s,
+		prefsCAPTCHA=%s,
+		prefsGoogleAccount=%s,
+		prefsLanguage=%s
 
 		WHERE id=%s",
-							   GetSQLValueString($_POST['prefsTemp'], "text"),
-							   GetSQLValueString($_POST['prefsWeight1'], "text"),
-							   GetSQLValueString($_POST['prefsWeight2'], "text"),
-							   GetSQLValueString($_POST['prefsLiquid1'], "text"),
-							   GetSQLValueString($_POST['prefsLiquid2'], "text"),
+			GetSQLValueString(sterilize($_POST['prefsTemp']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsWeight1']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsWeight2']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsLiquid1']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsLiquid2']), "text"),
 
-							   GetSQLValueString($_POST['prefsPaypal'], "text"),
-							   GetSQLValueString($_POST['prefsPaypalAccount'], "text"),
-							   GetSQLValueString($_POST['prefsCurrency'], "text"),
-							   GetSQLValueString($_POST['prefsCash'], "text"),
-							   GetSQLValueString($_POST['prefsCheck'], "text"),
+			GetSQLValueString(sterilize($_POST['prefsPaypal']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsPaypalAccount']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsCurrency']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsCash']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsCheck']), "text"),
 
-							   GetSQLValueString($_POST['prefsCheckPayee'], "text"),
-							   GetSQLValueString($_POST['prefsTransFee'], "text"),
-							   GetSQLValueString($_POST['prefsSponsors'], "text"),
-							   GetSQLValueString($_POST['prefsDisplayWinners'], "text"),
-							   GetSQLValueString($_POST['prefsWinnerDelay'], "text"),
+			GetSQLValueString(sterilize($_POST['prefsCheckPayee']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsTransFee']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsSponsors']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsDisplayWinners']), "text"),
+			GetSQLValueString($prefsWinnerDelay, "text"),
 
-							   GetSQLValueString($_POST['prefsWinnerMethod'], "int"),
-							   GetSQLValueString($_POST['prefsEntryForm'], "text"),
-							   GetSQLValueString($_POST['prefsRecordLimit'], "int"),
-							   GetSQLValueString($_POST['prefsRecordPaging'], "int"),
+			GetSQLValueString(sterilize($_POST['prefsWinnerMethod']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsEntryForm']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsRecordLimit']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsRecordPaging']), "int"),
 
-							   GetSQLValueString($_POST['prefsTheme'], "text"),
-							   GetSQLValueString($_POST['prefsDateFormat'], "text"),
-							   GetSQLValueString($_POST['prefsContact'], "text"),
-							   GetSQLValueString($_POST['prefsTimeZone'], "text"),
-							   GetSQLValueString($_POST['prefsEntryLimit'], "text"),
+			GetSQLValueString(sterilize($_POST['prefsTheme']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsDateFormat']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsContact']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsTimeZone']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsEntryLimit']), "text"),
 
-							   GetSQLValueString($_POST['prefsTimeFormat'], "text"),
-							   GetSQLValueString($_POST['prefsUserEntryLimit'], "int"),
-							   GetSQLValueString($_POST['prefsUserSubCatLimit'], "int"),
-							   GetSQLValueString($prefsUSCLEx, "text"),
-							   GetSQLValueString($_POST['prefsUSCLExLimit'], "int"),
+			GetSQLValueString(sterilize($_POST['prefsTimeFormat']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsUserEntryLimit']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsUserSubCatLimit']), "int"),
+			GetSQLValueString($prefsUSCLEx, "text"),
+			GetSQLValueString(sterilize($_POST['prefsUSCLExLimit']), "int"),
 
-							   GetSQLValueString($_POST['prefsPayToPrint'], "text"),
-							   GetSQLValueString($_POST['prefsHideRecipe'], "text"),
-							   GetSQLValueString($_POST['prefsUseMods'], "text"),
-							   GetSQLValueString($_POST['prefsSEF'], "text"),
-							   GetSQLValueString($_POST['prefsSpecialCharLimit'], "int"),
+			GetSQLValueString(sterilize($_POST['prefsPayToPrint']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsHideRecipe']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsUseMods']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsSEF']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsSpecialCharLimit']), "int"),
 
-							   GetSQLValueString($prefsStyleSet, "text"),
-							   GetSQLValueString($_POST['prefsAutoPurge'], "int"),
-							   GetSQLValueString($_POST['prefsEntryLimitPaid'], "int"),
-							   GetSQLValueString($_POST['prefsEmailRegConfirm'], "int"),
-							   GetSQLValueString($_POST['prefsSponsorLogos'], "text"),
-							   GetSQLValueString($_POST['prefsSpecific'], "int"),
+			GetSQLValueString($prefsStyleSet, "text"),
+			GetSQLValueString(sterilize($_POST['prefsAutoPurge']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsEntryLimitPaid']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsEmailRegConfirm']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsSponsorLogos']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsSpecific']), "int"),
 
-							   GetSQLValueString($_POST['prefsDropOff'], "int"),
-							   GetSQLValueString($_POST['prefsShipping'], "int"),
-							   GetSQLValueString($_POST['prefsPaypalIPN'], "int"),
-							   GetSQLValueString($_POST['prefsProEdition'], "int"),
-							   GetSQLValueString($id, "int"));
+			GetSQLValueString(sterilize($_POST['prefsDropOff']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsShipping']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsPaypalIPN']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsProEdition']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsDisplaySpecial']), "text"),
+
+			GetSQLValueString(sterilize($_POST['prefsShowBestBrewer']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsBestBrewerTitle']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsShowBestClub']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsBestClubTitle']), "text"),
+			GetSQLValueString($_POST['prefsBestUseBOS'], "int"),
+			GetSQLValueString(sterilize($_POST['prefsFirstPlacePts']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsSecondPlacePts']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsThirdPlacePts']), "int"),
+
+			GetSQLValueString(sterilize($_POST['prefsFourthPlacePts']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsHMPts']), "int"),
+			GetSQLValueString(sterilize($_POST['prefsTieBreakRule1']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsTieBreakRule2']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsTieBreakRule3']), "text"),
+
+			GetSQLValueString(sterilize($_POST['prefsTieBreakRule4']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsTieBreakRule5']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsTieBreakRule6']), "text"),
+			GetSQLValueString(sterilize($_POST['prefsCAPTCHA']), "text"),
+			GetSQLValueString(sterilize($prefsGoogleAccount), "text"),
+			GetSQLValueString(sterilize($_POST['prefsLanguage']), "text"),
+			GetSQLValueString($id, "int"));
 
 			mysqli_real_escape_string($connection,$updateSQL);
 			$result = mysqli_query($connection,$updateSQL) or die (mysqli_error($connection));
 			//echo $updateSQL; exit;
+
+			// Update style set of any custom styles to chosen style set
+			// Safeguards against a bug introduced in 2.1.13 scripting
+			$updateSQL = sprintf("UPDATE `%s` SET brewStyleVersion='%s' WHERE brewStyleOwn='custom'",$prefix."styles",$prefsStyleSet);
+			mysqli_select_db($connection,$database);
+			mysqli_real_escape_string($connection,$updateSQL);
+			$result = mysqli_query($connection,$updateSQL);
 
 			if ($_POST['prefsPaypalIPN'] == 1) {
 
@@ -354,13 +460,14 @@ if ((isset($_SERVER['HTTP_REFERER'])) && (((isset($_SESSION['loginUsername'])) &
 			session_start();
 			unset($_SESSION['prefs'.$prefix_session]);
 
+			if ($style_alert) $updateGoTo .= $_POST['relocate']."&msg=37";
+
 			$pattern = array('\'', '"');
 			$updateGoTo = str_replace($pattern, "", $updateGoTo);
-			header(sprintf("Location: %s", stripslashes($updateGoTo)));
+			$redirect_go_to = sprintf("Location: %s", stripslashes($updateGoTo));
 	}
 
 } else {
-	header(sprintf("Location: %s", $base_url."index.php?msg=98"));
-	exit;
+	$redirect_go_to = sprintf("Location: %s", $base_url."index.php?msg=98");
 }
 ?>
